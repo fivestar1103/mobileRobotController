@@ -1,5 +1,5 @@
 import heapq
-from typing import List, Tuple
+from typing import List
 from Path_Planning_and_Map_Management.Map import Map
 class PathPlanner:
     def __init__(self, mapObject: Map):
@@ -12,7 +12,7 @@ class PathPlanner:
 
     # 현재 경로를 설정
     def setCurrentPath(self, path: List[List]):
-        self.__current_path = path
+        self.__currentPath = path
 
     # -------- a* 알고리즘 구현에 필요한 함수들 ------- #
     def __heuristic(self, a, b):  # 맨해튼 거리 이용
@@ -28,7 +28,7 @@ class PathPlanner:
                 neighbors.append(neighbor)
         return neighbors
 
-    def __a_star_search(self, start, goal, hazards):
+    def __aStarSearch(self, start, goal, hazards):
         frontier = []
         heapq.heappush(frontier, (0, start))
         cameFrom = {start: None}
@@ -64,20 +64,30 @@ class PathPlanner:
 
     # 최단 경로 구하기
     def planPath(self):
+        fullMap = self.__map.getFullMap()
+        # print the fullMap
+        print("##### 🗺️ Map: #####")
+        for row in reversed(fullMap):
+            for col in row:
+                print(col, end=' ')
+            print()
+        print()
+
         start = self.__map.getRobotCoord()  # 로봇의 현재 위치
-        goals = [spot.position for spot in self.__map.getSpots()]  # 모든 탐색 지점
+        goals = [spot.position for spot in self.__map.getSpots() if not spot.isExplored()]  # 방문하지 않은 탐색 지점
         hazards = {hazard.position for hazard in self.__map.getHazards() if not hazard.isHidden()}  # 공개된 위험 지점
         path = [start]
 
         while goals:
             next_goal = min(goals, key=lambda x: self.__heuristic(path[-1], x))
             goals.remove(next_goal)
-            subpath = self.__a_star_search(path[-1], next_goal, hazards)
+            subpath = self.__aStarSearch(path[-1], next_goal, hazards)
             if subpath:  # 경로가 존재하는 경우에만 추가
                 path.extend(subpath[1:])  # 시작점을 제외하고 경로 추가
             else:
-                # 경로가 존재하지 않으면, 에러 처리 또는 다른 탐색 지점 시도
-                pass
+                # 경로가 존재하지 않는 경우
+                print("No path exists!")
+                return
 
         self.__currentPath = path
         return self.__currentPath

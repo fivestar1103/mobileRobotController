@@ -8,6 +8,8 @@ class Spot:
 
     def setExplored(self, explored):
         self.explored = explored
+        if explored:
+            print(f"✅ Spot at {self.getPosition()} was explored!")
 
     def isExplored(self):
         return self.explored

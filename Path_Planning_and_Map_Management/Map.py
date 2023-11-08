@@ -4,9 +4,9 @@ from Data_Structures.Hazard import Hazard
 from Data_Structures.Spot import Spot
 
 class Map:
-    def __init__(self, rows: int, cols: int):
-        self.__mapLength: Tuple[int, int] = (rows, cols)
-        self.__robotCoord: Tuple[int, int] = (0,0)
+    def __init__(self):
+        self.__mapLength: Tuple[int, int] = (0, 0)
+        self.__robotCoord: Tuple[int, int, int] = (0, 0, 0)  # row, col, direction(북동남서 순으로 0~4)
         self.__spots: List[Spot] = []
         self.__hazards: List[Hazard] = []
         self.__colorBlobs: List[ColorBlob] = []
@@ -23,7 +23,7 @@ class Map:
     def getRobotCoord(self):
         return self.__robotCoord
 
-    def setRobotCoord(self, position: (int, int)):
+    def setRobotCoord(self, position: (int, int, int)):
         self.__robotCoord = position
 
     #모든 탐색 지점을 반환
@@ -72,23 +72,23 @@ class Map:
     # 전체 맵 반환 - 꼭 필요한 것인지 모르겠음. 일단 디버깅 위해 추가
     def getFullMap(self):
         # 맵의 크기에 맞는 2차원 배열 생성
-        fullMap = [['-' for _ in range(self.__mapLength[1])] for _ in range(self.__mapLength[0])]
+        fullMap = [['⚪󠀠󠀠' for _ in range(self.__mapLength[1])] for _ in range(self.__mapLength[0])]
         
         # spots, hazards, colorBlobs를 맵에 표시
-        for spot in self.__spots:  # 'S'는 방문한 탐색지점을 의미, 's'는 방문하지 않은 탐색지점
+        for spot in self.__spots:  # '✅'는 방문한 탐색지점을 의미, '🎯'는 방문하지 않은 탐색지점
             r, c = spot.position
-            fullMap[r][c] = 'S' if spot.isExplored else 's'
+            fullMap[r][c] = '✅' if spot.isExplored() else '🎯'
         
-        for hazard in self.__hazards:  # 'h'는 숨겨진 위험 지점을 의미, 'H'는 공개된 위험 지점
+        for hazard in self.__hazards:  # 'h'는 숨겨진 위험 지점을 의미, '⚠'는 공개된 위험 지점
             r, c = hazard.position
-            fullMap[r][c] = 'h' if hazard.isHidden else 'H'
+            fullMap[r][c] = 'hh' if hazard.isHidden() else '⚠️'
         
-        for colorBlob in self.__colorBlobs:  # 'c'는 숨겨진 중요 지점을 의미, 'C'는 공개된 중요 지점
+        for colorBlob in self.__colorBlobs:  # 'c'는 숨겨진 중요 지점을 의미, '🔵'는 공개된 중요 지점
             r, c = colorBlob.position
-            fullMap[r][c] = 'c' if colorBlob.isHidden else 'C'
+            fullMap[r][c] = 'cc' if colorBlob.isHidden() else '🔵'
         
         # 로봇의 위치를 맵에 표시
-        r, c = self.__robotCoord
-        fullMap[r][c] = 'R'
+        r, c, d = self.__robotCoord
+        fullMap[r][c] = '🤖'
         
         return fullMap

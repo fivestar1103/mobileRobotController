@@ -1,15 +1,29 @@
-from Sensor import Sensor
+from Sensors_and_Detection.Sensor import Sensor
+
 
 class ColorBlobSensor(Sensor):
     def __init__(self):
         super().__init__()
-        self.set_sensor_type('ColorBlob')
+        self.setSensorType('C')
 
-    def readSensor(self):
-        """주변 네 칸 중 중요 지점을 감지하는 메서드"""
-        # 실제 센서 데이터를 읽어 중요 지점 여부를 반환하는 로직 구현
-        pass
+    # 주변 네 칸을 읽는다
+    def readSensor(self, position):
+        currentRow, currentCol = position[:2]
+        newPositions = []
+        for rowDiff, colDiff in [[1, 0], [0, 1], [-1, 0], [0, -1]]:
+            newRow, newCol = currentRow + rowDiff, currentCol + colDiff
+            newPosition = (newRow, newCol)
+        self.setSensorData([newPosition])
 
-    def detectColorBlob(self):
-        """중요 지점을 감지하고 그 정보를 반환하는 메서드"""
-        return self.get_sensor_data()
+    # 주변 네 칸이 중요 지점인지 판단
+    def detectColorBlob(self, currentPosition, colorBlobs):
+        self.readSensor(currentPosition)
+        sensedPositions = self.getSensorData()
+
+        revealedColorBlobs = []
+        for colorBlob in colorBlobs:
+            for sensedPosition in sensedPositions:
+                if colorBlob.getPosition() == sensedPosition and colorBlob.isHidden():
+                    revealedColorBlobs.append(colorBlob)
+
+        return revealedColorBlobs

@@ -11,6 +11,7 @@ class Hazard:
 
     def setRevealed(self):
         self.hidden = False
+        print(f"⚠️ Hazard at {self.getPosition()} was revealed!")
 
     def __str__(self):
         return f"ColorBlob({self.position}, Hidden: {self.hidden})"

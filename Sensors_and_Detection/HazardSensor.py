@@ -1,15 +1,27 @@
-from Sensor import Sensor
+from Sensors_and_Detection.Sensor import Sensor
+
 
 class HazardSensor(Sensor):
     def __init__(self):
         super().__init__()
-        self.set_sensor_type('Hazard')
+        self.setSensorType('H')
 
-    def readSensor(self):
-        """바로 앞의 칸이 위험 지점인지 감지하는 메서드"""
-        # 실제 센서 데이터를 읽어 위험 지점 여부를 반환하는 로직 구현
-        pass
+    # 바로 앞 칸을 읽는다
+    def readSensor(self, position):
+        currentRow, currentCol, currentDirection = position
+        rowDiff, colDiff = [[1, 0], [0, 1], [-1, 0], [0, -1]][currentDirection]
+        newRow, newCol = currentRow + rowDiff, currentCol + colDiff
+        newPosition = (newRow, newCol)
+        self.setSensorData([newPosition])
 
-    def detectHazard(self):
-        """위험 지점을 감지하고 그 정보를 반환하는 메서드"""
-        return self.get_sensor_data()
+    # 바로 앞의 칸이 위험 지점인지 판단
+    def detectHazard(self, currentPosition, hazards):
+        self.readSensor(currentPosition)
+        sensedPosition = self.getSensorData()[0]
+
+        revealedHazards = []
+        for hazard in hazards:
+            if hazard.getPosition() == sensedPosition and hazard.isHidden():
+                revealedHazards.append(hazard)
+
+        return revealedHazards
