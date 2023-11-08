@@ -1,3 +1,9 @@
 class Display:
-    def __init__(self):
-        print("Hello World!")
+    def displayMap(self):
+        pass
+
+    def displayRobot(self):
+        pass
+
+    def displayPath(self):
+        pass
