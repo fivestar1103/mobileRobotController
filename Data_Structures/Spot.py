@@ -1,6 +1,6 @@
 class Spot:
-    def __init__(self, row, col, explored=False):
-        self.position = (row, col)
+    def __init__(self, col, row, explored=False):
+        self.position = (col, row)
         self.explored = explored
 
     def getPosition(self):
