@@ -1,6 +1,6 @@
 class Hazard:
-    def __init__(self, row, col, hidden=True):
-        self.position = (row, col)
+    def __init__(self, col, row, hidden=True):
+        self.position = (col, row)
         self.hidden = hidden
 
     def getPosition(self):
@@ -14,4 +14,4 @@ class Hazard:
         print(f"⚠️ Hazard at {self.getPosition()} was revealed!")
 
     def __str__(self):
-        return f"ColorBlob({self.position}, Hidden: {self.hidden})"
+        return f"Hazard({self.position}, Hidden: {self.hidden})"

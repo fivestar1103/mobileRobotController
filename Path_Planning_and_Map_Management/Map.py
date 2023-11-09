@@ -6,7 +6,7 @@ from Data_Structures.Spot import Spot
 class Map:
     def __init__(self):
         self.__mapLength: Tuple[int, int] = (0, 0)
-        self.__robotCoord: Tuple[int, int, int] = (0, 0, 0)  # row, col, direction(북동남서 순으로 0~4)
+        self.__robotCoord: Tuple[int, int, int] = (0, 0, 0)  # col, row, direction(북동남서 순으로 0~4)
         self.__spots: List[Spot] = []
         self.__hazards: List[Hazard] = []
         self.__colorBlobs: List[ColorBlob] = []
@@ -16,8 +16,8 @@ class Map:
         return self.__mapLength
 
     #지도의 행과 열의 길이를 설정
-    def setMapLength(self, rows, cols):
-        self.__mapLength = (rows, cols)
+    def setMapLength(self, cols, rows):
+        self.__mapLength = (cols, rows)
         
     #로봇의 위치 반환
     def getRobotCoord(self):
@@ -59,14 +59,14 @@ class Map:
         self.__colorBlobs.append(colorBlob)
 
     # 숨겨진 지점을 공개된 지점으로 변경
-    def revealHidden(self, point: ColorBlob):
-        if point is ColorBlob:
+    def revealHidden(self, point):
+        if type(point) == ColorBlob:
             for colorBlob in self.__colorBlobs:
-                if point.position == colorBlob.position:
+                if point.getPosition() == colorBlob.getPosition():
                     colorBlob.setRevealed()
-        elif point is Hazard:
+        elif type(point) == Hazard:
             for hazard in self.__hazards:
-                if point.position == hazard.position:
+                if point.getPosition() == hazard.getPosition():
                     hazard.setRevealed()
 
     # 전체 맵 반환 - 꼭 필요한 것인지 모르겠음. 일단 디버깅 위해 추가
@@ -76,19 +76,19 @@ class Map:
         
         # spots, hazards, colorBlobs를 맵에 표시
         for spot in self.__spots:  # '✅'는 방문한 탐색지점을 의미, '🎯'는 방문하지 않은 탐색지점
-            r, c = spot.position
-            fullMap[r][c] = '✅' if spot.isExplored() else '🎯'
+            col, row = spot.getPosition()
+            fullMap[row][col] = '✅' if spot.isExplored() else '🎯'
         
         for hazard in self.__hazards:  # 'h'는 숨겨진 위험 지점을 의미, '⚠'는 공개된 위험 지점
-            r, c = hazard.position
-            fullMap[r][c] = 'hh' if hazard.isHidden() else '⚠️'
+            col, row = hazard.getPosition()
+            fullMap[row][col] = 'hh' if hazard.isHidden() else '⚠️'
         
         for colorBlob in self.__colorBlobs:  # 'c'는 숨겨진 중요 지점을 의미, '🔵'는 공개된 중요 지점
-            r, c = colorBlob.position
-            fullMap[r][c] = 'cc' if colorBlob.isHidden() else '🔵'
+            col, row = colorBlob.getPosition()
+            fullMap[row][col] = 'cc' if colorBlob.isHidden() else '🔵'
         
         # 로봇의 위치를 맵에 표시
-        r, c, d = self.__robotCoord
-        fullMap[r][c] = '🤖'
+        col, row, direction = self.__robotCoord
+        fullMap[row][col] = '🤖'
         
         return fullMap

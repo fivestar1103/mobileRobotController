@@ -31,40 +31,40 @@ class RobotController:
         prob = random.randint(1, 11)
         moveCount = 1 if prob > 3 else 2  # 30% 확률로 2칸 이동
 
-        movementAccordingToDirection = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        movementAccordingToDirection = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
-        currentRow, currentCol, currentDirection = self.getCurrentPosition()
-        rowDiff, colDiff = movementAccordingToDirection[currentDirection]
-        newRow, newCol = currentRow + rowDiff * moveCount, currentCol + colDiff * moveCount
+        currentCol, currentRow, currentDirection = self.getCurrentPosition()
+        colDiff, rowDiff = movementAccordingToDirection[currentDirection]
+        newCol, newRow = currentCol + colDiff * moveCount, currentRow + rowDiff * moveCount
 
         # 예외 설정
         isException = False
         # 2칸 앞이 hazard인 경우
         for hazard in hazards:
-            if hazard.getPosition() == (newRow, newCol):
+            if hazard.getPosition() == (newCol, newRow):
                 isException = True
                 break
         # 맵 밖으로 이동하는 경우
-        if (newRow < 0 or newRow >= mapLength[0]) or (newCol < 0 or newCol >= mapLength[1]):
+        if (newCol < 0 or newCol >= mapLength[0]) or (newRow < 0 or newRow >= mapLength[1]):
             isException = True
         if isException:
             moveCount = 1
-            newRow, newCol = currentRow + rowDiff * moveCount, currentCol + colDiff * moveCount
+            newCol, newRow = currentCol + colDiff * moveCount, currentRow + rowDiff * moveCount
 
-        newPosition = (newRow, newCol, currentDirection)
+        newPosition = (newCol, newRow, currentDirection)
         self.setCurrentPosition(newPosition)
 
-        print(f"Robot has moved {moveCount} time(s) and now at {self.__currentPosition[:2]}")
+        print(f"\tRobot has moved {moveCount} time(s) and now at {self.__currentPosition[:2]}")
 
     # 로봇을 시계방향으로 90도 회전시킨다
     def rotate(self):
         currentDirection = self.__currentPosition[2]
         newDirection = (currentDirection + 1) % 4
-        row, col = self.__currentPosition[:2]
-        self.setCurrentPosition((row, col, newDirection))
+        col, row = self.__currentPosition[:2]
+        self.setCurrentPosition((col, row, newDirection))
 
         directionDict = ['N', 'E', 'S', 'W']
-        print(f"Robot has rotated and now facing {directionDict[self.__currentPosition[2]]}")
+        print(f"\tRobot has rotated and now facing {directionDict[self.__currentPosition[2]]}")
 
     # 센서를 통해 위험 지점 감지
     def detectHazard(self, hazards):

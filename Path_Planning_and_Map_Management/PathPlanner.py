@@ -23,8 +23,8 @@ class PathPlanner:
         neighbors = []
         for direction in directions:
             neighbor = (node[0] + direction[0], node[1] + direction[1])
-            rows, cols = self.__map.getMapLength()
-            if 0 <= neighbor[0] < rows and 0 <= neighbor[1] < cols:
+            cols, rows = self.__map.getMapLength()
+            if 0 <= neighbor[0] < cols and 0 <= neighbor[1] < rows:
                 neighbors.append(neighbor)
         return neighbors
 
@@ -67,11 +67,18 @@ class PathPlanner:
         fullMap = self.__map.getFullMap()
         # print the fullMap
         print("##### 🗺️ Map: #####")
+        cols, rows = self.__map.getMapLength()
         for row in reversed(fullMap):
+            print(f"{rows - 1} ", end=' ')
+            rows -= 1
             for col in row:
                 print(col, end=' ')
             print()
+        print("  ", end=' ')
+        for colNum in range(cols):
+            print(f"{colNum} ", end=' ')
         print()
+
 
         start = self.__map.getRobotCoord()  # 로봇의 현재 위치
         goals = [spot.position for spot in self.__map.getSpots() if not spot.isExplored()]  # 방문하지 않은 탐색 지점

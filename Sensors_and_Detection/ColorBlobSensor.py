@@ -8,12 +8,13 @@ class ColorBlobSensor(Sensor):
 
     # 주변 네 칸을 읽는다
     def readSensor(self, position):
-        currentRow, currentCol = position[:2]
+        currentCol, currentRow = position[:2]
         newPositions = []
-        for rowDiff, colDiff in [[1, 0], [0, 1], [-1, 0], [0, -1]]:
-            newRow, newCol = currentRow + rowDiff, currentCol + colDiff
-            newPosition = (newRow, newCol)
-        self.setSensorData([newPosition])
+        for colDiff, rowDiff in [[0, 1], [1, 0], [0, -1], [-1, 0]]:
+            newCol, newRow = currentCol + colDiff, currentRow + rowDiff
+            newPosition = (newCol, newRow)
+        newPositions.append(newPosition)
+        self.setSensorData(newPositions)
 
     # 주변 네 칸이 중요 지점인지 판단
     def detectColorBlob(self, currentPosition, colorBlobs):
