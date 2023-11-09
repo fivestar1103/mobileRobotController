@@ -1,3 +1,4 @@
+# branch test
 class ColorBlob:
     def __init__(self, col, row, hidden=True):
         self.__position = (col, row)
