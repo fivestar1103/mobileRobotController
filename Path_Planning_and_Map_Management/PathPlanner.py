@@ -80,9 +80,10 @@ class PathPlanner:
             print(f"{numberIconString[colNum]}", end=' ')
         print()
 
+
         start = self.__map.getRobotCoord()  # 로봇의 현재 위치
-        goals = [spot.getPosition() for spot in self.__map.getSpots() if not spot.isExplored()]  # 방문하지 않은 탐색 지점
-        hazards = {hazard.getPosition() for hazard in self.__map.getHazards() if not hazard.isHidden()}  # 공개된 위험 지점
+        goals = [spot.position for spot in self.__map.getSpots() if not spot.isExplored()]  # 방문하지 않은 탐색 지점
+        hazards = {hazard.position for hazard in self.__map.getHazards() if not hazard.isHidden()}  # 공개된 위험 지점
         path = [start]
 
         while goals:
