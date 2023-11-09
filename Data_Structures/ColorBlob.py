@@ -1,17 +1,18 @@
+# branch test
 class ColorBlob:
     def __init__(self, col, row, hidden=True):
         self.__position = (col, row)
-        self.hidden = hidden
+        self.__hidden = hidden
 
     def getPosition(self):
-        return self.position
+        return self.__position
 
     def isHidden(self):
-        return self.hidden
+        return self.__hidden
 
     def setRevealed(self):
-        self.hidden = False
+        self.__hidden = False
         print(f"🔵 ColorBlob at {self.getPosition()} was revealed!")
 
     def __str__(self):
-        return f"ColorBlob({self.position}, Hidden: {self.hidden})"
+        return f"ColorBlob({self.__position}, Hidden: {self.__hidden})"
