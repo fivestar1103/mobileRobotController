@@ -72,7 +72,8 @@ class Map:
     # 전체 맵 반환 - 꼭 필요한 것인지 모르겠음. 일단 디버깅 위해 추가
     def getFullMap(self):
         # 맵의 크기에 맞는 2차원 배열 생성
-        fullMap = [['⚪󠀠󠀠' for _ in range(self.__mapLength[1])] for _ in range(self.__mapLength[0])]
+        cols, rows = self.getMapLength()
+        fullMap = [['⚪󠀠󠀠' for _ in range(cols)] for _ in range(rows)]
         
         # spots, hazards, colorBlobs를 맵에 표시
         for spot in self.__spots:  # '✅'는 방문한 탐색지점을 의미, '🎯'는 방문하지 않은 탐색지점

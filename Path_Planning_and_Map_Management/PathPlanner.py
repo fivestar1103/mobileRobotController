@@ -65,18 +65,19 @@ class PathPlanner:
     # 최단 경로 구하기
     def planPath(self):
         fullMap = self.__map.getFullMap()
+        numberIconString = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
         # print the fullMap
-        print("##### 🗺️ Map: #####")
+        print("########## 🗺️ Map: ##########")
         cols, rows = self.__map.getMapLength()
         for row in reversed(fullMap):
-            print(f"{rows - 1} ", end=' ')
+            print(f"{numberIconString[rows - 1]}", end=' ')
             rows -= 1
             for col in row:
                 print(col, end=' ')
             print()
         print("  ", end=' ')
         for colNum in range(cols):
-            print(f"{colNum} ", end=' ')
+            print(f"{numberIconString[colNum]}", end=' ')
         print()
 
 
