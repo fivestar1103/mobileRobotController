@@ -8,10 +8,10 @@ class HazardSensor(Sensor):
 
     # 바로 앞 칸을 읽는다
     def readSensor(self, position):
-        currentRow, currentCol, currentDirection = position
-        rowDiff, colDiff = [[1, 0], [0, 1], [-1, 0], [0, -1]][currentDirection]
-        newRow, newCol = currentRow + rowDiff, currentCol + colDiff
-        newPosition = (newRow, newCol)
+        currentCol, currentRow, currentDirection = position
+        colDiff, rowDiff = [[0, 1], [1, 0], [0, -1], [-1, 0]][currentDirection]
+        newCol, newRow = currentCol + colDiff, currentRow + rowDiff
+        newPosition = (newCol, newRow)
         self.setSensorData([newPosition])
 
     # 바로 앞의 칸이 위험 지점인지 판단
@@ -19,9 +19,10 @@ class HazardSensor(Sensor):
         self.readSensor(currentPosition)
         sensedPosition = self.getSensorData()[0]
 
-        revealedHazards = []
+        revealedHazard = None
         for hazard in hazards:
             if hazard.getPosition() == sensedPosition and hazard.isHidden():
-                revealedHazards.append(hazard)
+                revealedHazard = hazard
+                break
 
-        return revealedHazards
+        return revealedHazard

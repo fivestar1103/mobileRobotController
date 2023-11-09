@@ -8,9 +8,9 @@ class PositionSensor(Sensor):
 
     # 로봇의 실제 위치를 읽는다
     def readSensor(self, position):
-        currentRow, currentCol, currentDirection = position
-        sensedRow, sensedCol = currentRow - 0, currentCol - 0
-        sensedPosition = [(sensedRow, sensedCol, currentDirection)]
+        currentCol, currentRow, currentDirection = position
+        sensedCol, sensedRow = currentCol - 0, currentRow - 0
+        sensedPosition = [(sensedCol, sensedRow, currentDirection)]
         self.setSensorData(sensedPosition)
 
     # 로봇의 실제 위치가 SIM 위치와 같은지 확인한다
