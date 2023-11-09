@@ -1,6 +1,6 @@
 class ColorBlob:
     def __init__(self, col, row, hidden=True):
-        self.position = (col, row)
+        self.__position = (col, row)
         self.hidden = hidden
 
     def getPosition(self):
