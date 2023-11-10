@@ -1,17 +1,16 @@
-class Hazard:
-    def __init__(self, col, row, hidden=True):
-        self.position = (col, row)
-        self.hidden = hidden
+from Data_Structures.Position import Position
 
-    def getPosition(self):
-        return self.position
+
+class Hazard(Position):
+    def __init__(self, col, row, hidden=False):
+        super().__init__(col, row, hidden=hidden)
 
     def isHidden(self):
-        return self.hidden
+        return super().getHidden()
 
     def setRevealed(self):
-        self.hidden = False
-        print(f"⚠️ Hazard at {self.getPosition()} was revealed!")
+        super().setHidden(False)
+        print(f"[Robot]: ⚠️Hazard at {self.getPosition()} was revealed!")
 
     def __str__(self):
-        return f"Hazard({self.position}, Hidden: {self.hidden})"
+        return f"Hazard({self.getPosition()}, Hidden: {self.isHidden()})"

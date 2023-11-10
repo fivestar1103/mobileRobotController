@@ -1,17 +1,16 @@
-class ColorBlob:
-    def __init__(self, col, row, hidden=True):
-        self.__position = (col, row)
-        self.hidden = hidden
+from Data_Structures.Position import Position
 
-    def getPosition(self):
-        return self.position
+
+class ColorBlob(Position):
+    def __init__(self, col, row, hidden=False):
+        super().__init__(col, row, hidden=hidden)
 
     def isHidden(self):
-        return self.hidden
+        return super().getHidden()
 
     def setRevealed(self):
-        self.hidden = False
-        print(f"🔵 ColorBlob at {self.getPosition()} was revealed!")
+        super().setHidden(False)
+        print(f"[Robot]: 🔵ColorBlob at {self.getPosition()} was revealed!")
 
     def __str__(self):
-        return f"ColorBlob({self.position}, Hidden: {self.hidden})"
+        return f"ColorBlob({self.getPosition()}, Hidden: {self.isHidden()})"

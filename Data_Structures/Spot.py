@@ -1,18 +1,16 @@
-class Spot:
+from Data_Structures.Position import Position
+
+
+class Spot(Position):
     def __init__(self, col, row, explored=False):
-        self.position = (col, row)
-        self.explored = explored
-
-    def getPosition(self):
-        return self.position
-
-    def setExplored(self, explored):
-        self.explored = explored
-        if explored:
-            print(f"✅ Spot at {self.getPosition()} was explored!")
+        super().__init__(col, row, visited=explored)
 
     def isExplored(self):
-        return self.explored
+        return super().getVisited()
+
+    def setExplored(self):
+        super().setVisited(True)
+        print(f"[Robot]: ✅Spot at {self.getPosition()} was explored!")
 
     def __str__(self):
-        return f"Spot({self.position}, Explored: {self.explored})"
+        return f"Spot({self.getPosition()}, Explored: {self.isExplored()})"

@@ -24,14 +24,14 @@ class SIMController:
             print(f"Starting from {path[0][:2]} facing {direction[path[0][2]]}...")
         # ------------------------------------
 
-        currentCol, currentRow, currentDirection = path[0]  # 경로의 첫 튜플의 마지막 값은 로봇의 방향이다
+        currentCol, currentRow, currentDirection = path[0]  # 시작점
         movementDict = {
             1: 0,  # up
             2: 1,  # right
             -1: 2,  # down
             -2: 3  # left
         }
-        rotationDict = [[0, 3, 2, 1],
+        rotationDict = [[0, 3, 2, 1],  # movement에 따른 필요 회전 수
                         [1, 0, 3, 2],
                         [2, 1, 0, 3],
                         [3, 2, 1, 0]]
@@ -104,7 +104,7 @@ class SIMController:
         spots = self.mapObject.getSpots()
         for spot in spots:
             if spot.getPosition() == actualPosition[:2] and not spot.isExplored():
-                spot.setExplored(True)
+                spot.setExplored()
 
         # 지시를 불이행 한 경우
         if actualPosition != currentPosition:
