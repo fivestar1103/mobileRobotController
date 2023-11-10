@@ -13,7 +13,7 @@ class ColorBlobSensor(Sensor):
         for colDiff, rowDiff in [[0, 1], [1, 0], [0, -1], [-1, 0]]:
             newCol, newRow = currentCol + colDiff, currentRow + rowDiff
             newPosition = (newCol, newRow)
-        newPositions.append(newPosition)
+            newPositions.append(newPosition)
         self.setSensorData(newPositions)
 
     # 주변 네 칸이 중요 지점인지 판단
@@ -22,9 +22,9 @@ class ColorBlobSensor(Sensor):
         sensedPositions = self.getSensorData()
 
         revealedColorBlobs = []
-        for colorBlob in colorBlobs:
-            for sensedPosition in sensedPositions:
-                if colorBlob.getPosition() == sensedPosition and colorBlob.isHidden():
-                    revealedColorBlobs.append(colorBlob)
+        hiddenColorBlobs = [colorBlob for colorBlob in colorBlobs if colorBlob.isHidden()]
+        for hiddenColorBlob in hiddenColorBlobs:
+            if hiddenColorBlob.getPosition() in sensedPositions:
+                revealedColorBlobs.append(hiddenColorBlob)
 
         return revealedColorBlobs

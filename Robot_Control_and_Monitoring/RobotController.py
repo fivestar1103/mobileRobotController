@@ -7,8 +7,10 @@
 # 센서를 사용해 중요 지점을 찾는다
 
 import random
+from typing import List
 
-from Path_Planning_and_Map_Management.Map import Map
+from Data_Structures.ColorBlob import ColorBlob
+from Data_Structures.Hazard import Hazard
 from Sensors_and_Detection.ColorBlobSensor import ColorBlobSensor
 from Sensors_and_Detection.HazardSensor import HazardSensor
 from Sensors_and_Detection.PositionSensor import PositionSensor
@@ -34,6 +36,7 @@ class RobotController:
         movementAccordingToDirection = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
         currentCol, currentRow, currentDirection = self.getCurrentPosition()
+
         colDiff, rowDiff = movementAccordingToDirection[currentDirection]
         newCol, newRow = currentCol + colDiff * moveCount, currentRow + rowDiff * moveCount
 
@@ -67,12 +70,12 @@ class RobotController:
         print(f"\tRobot has rotated and now facing {directionDict[self.__currentPosition[2]]}")
 
     # 센서를 통해 위험 지점 감지
-    def detectHazard(self, hazards):
+    def detectHazard(self, hazards) -> Hazard:
         hazardSensor = HazardSensor()
         return hazardSensor.detectHazard(self.getCurrentPosition(), hazards)
 
     # 센서를 통해 중요 지점 감지
-    def detectColorBlob(self, colorBlobs):
+    def detectColorBlob(self, colorBlobs) -> List[ColorBlob]:
         colorBlobSensor = ColorBlobSensor()
         return colorBlobSensor.detectColorBlob(self.getCurrentPosition(), colorBlobs)
 

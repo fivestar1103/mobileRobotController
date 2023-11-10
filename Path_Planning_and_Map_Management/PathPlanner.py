@@ -1,6 +1,8 @@
 import heapq
 from typing import List
 from Path_Planning_and_Map_Management.Map import Map
+
+
 class PathPlanner:
     def __init__(self, mapObject: Map):
         self.__map = mapObject
@@ -64,22 +66,7 @@ class PathPlanner:
 
     # 최단 경로 구하기
     def planPath(self):
-        fullMap = self.__map.getFullMap()
-        numberIconString = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
-        # print the fullMap
-        print("########## 🗺️ Map: ##########")
-        cols, rows = self.__map.getMapLength()
-        for row in reversed(fullMap):
-            print(f"{numberIconString[rows - 1]}", end=' ')
-            rows -= 1
-            for col in row:
-                print(col, end=' ')
-            print()
-        print("  ", end=' ')
-        for colNum in range(cols):
-            print(f"{numberIconString[colNum]}", end=' ')
-        print()
-
+        self.__map.printFullMap()
 
         start = self.__map.getRobotCoord()  # 로봇의 현재 위치
         goals = [spot.getPosition() for spot in self.__map.getSpots() if not spot.isExplored()]  # 방문하지 않은 탐색 지점

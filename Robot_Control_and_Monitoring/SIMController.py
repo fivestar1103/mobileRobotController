@@ -1,3 +1,4 @@
+from Data_Structures.Hazard import Hazard
 from Path_Planning_and_Map_Management.Map import Map
 from Path_Planning_and_Map_Management.PathPlanner import PathPlanner
 from Robot_Control_and_Monitoring.RobotController import RobotController
@@ -24,7 +25,6 @@ class SIMController:
             print(f"Starting from {path[0][:2]} facing {direction[path[0][2]]}...")
         # ------------------------------------
 
-        currentCol, currentRow, currentDirection = path[0]  # 시작점
         movementDict = {
             1: 0,  # up
             2: 1,  # right
@@ -36,86 +36,88 @@ class SIMController:
                         [2, 1, 0, 3],
                         [3, 2, 1, 0]]
 
+        currentCol, currentRow, currentDirection = path[0]  # 첫 지점은 시작점
+        currentPosition = (currentCol, currentRow, currentDirection)
+
+        # 이동하고자 하는 다음 지점에 대해 반복
         for i in range(1, len(path)):
             # ------- 디버깅 용 -------
-            print(f"Attempting to move to Point #{i}: {path[i]}...")
+            print(f"\n[Add-on]: Attempting to move to Point #{i}: {path[i]}...")
             # -----------------------
 
-            nextPosition = path[i]
-            nextPath = path[i + 1] if i < len(path) - 1 else None  # 마지막 경로일 경우 다음 경로가 막힐 경우에 대한 판단 불필요
+            # 중요지점, 시작지점, 위험지점 여부 탐색
+            self.receiveSensorData(currentPosition, checkColorBlob=True, checkSpot=True, checkHazard=True)
 
+            # 필요 회전 수 계산
+            nextPosition = path[i]
             nextCol, nextRow = nextPosition
             colDiff, rowDiff = nextCol - currentCol, nextRow - currentRow
             movement = movementDict[2 * colDiff + rowDiff]
             requiredTurns = rotationDict[movement][currentDirection]
 
-            # 우선 회전이 필요한 만큼 회전 시킨다
+            # 회전이 필요한 만큼 회전 시킨다
             for turn in range(requiredTurns):
                 self.robotController.rotate()
                 currentDirection = (currentDirection + 1) % 4
                 currentPosition = (currentCol, currentRow, currentDirection)
+                self.mapObject.setRobotCoord(currentPosition)
+                # 위험지점 여부 탐색
+                self.receiveSensorData(currentPosition, checkHazard=True)
 
-                # 회전 후 앞의 한 칸이 위험 지점 여부 감지
-                movementAccordingToDirection = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-                colDiff, rowDiff = movementAccordingToDirection[currentDirection]
-                newCol, newRow = currentCol + colDiff, currentRow + rowDiff
-                newPosition = (newCol, newRow)
-                # 맵 밖으로 이동하는 경우는 예외 처리
-                mapLength = self.mapObject.getMapLength()
-                if (newCol < 0 or newCol >= mapLength[0]) or (newRow < 0 or newRow >= mapLength[1]):
-                    newPosition = None
-                self.receiveSensorData(currentPosition, newPosition, isRotation=True)
+            # 전진 가능 여부 판단
+            pathObstructed, wrongMovement = False, False
+            revealedHazards = [hazard.getPosition() for hazard in self.mapObject.getHazards() if not hazard.isHidden()]
+            if nextPosition in revealedHazards:
+                # 전진 불가능
+                print(f"\t🚧 Path obstructed when trying to move to {nextPosition}!")
+                pathObstructed = True
+            else:
+                # 전진 가능하면 전진
+                self.robotController.move(self.mapObject.getHazards(), self.mapObject.getMapLength())
+                # 이동하고자 하는 지점으로 add-on 상의 로봇 위치 업데이트
+                currentCol, currentRow = nextPosition
+                currentPosition = (currentCol, currentRow, currentDirection)
+                self.mapObject.setRobotCoord(currentPosition)
 
-            # 그 다음에 앞으로 한 칸 전진 명령을 내린다
-            self.robotController.move(self.mapObject.getHazards(), self.mapObject.getMapLength())
-            currentCol, currentRow = nextPosition
+                # 지시 불이행 여부 판단
+                actualPosition = self.receiveSensorData(currentPosition, checkCurrentPosition=True)
+                if actualPosition != self.mapObject.getRobotCoord():
+                    wrongMovement = True
+                if wrongMovement:
+                    self.mapObject.setRobotCoord(actualPosition)
+                    print("\t❌ Robot has malfunctioned!!!")
 
-            # 센서 값을 받아서 경로 재계획이 필요한지 판단하고 필요시 경로 재계획
-            newPosition = (nextCol, nextRow, currentDirection)
-            isNewPathRequired = self.receiveSensorData(newPosition, nextPath)
-            if isNewPathRequired:
-                print("\t\tReplanning path...\n")
+            # 필요 시 경로 재계획
+            if pathObstructed or wrongMovement:
+                print("\t\t📝 Replanning path...\n")
                 replannedPath = self.pathPlanner.planPath()
                 self.sendMovementCommand(replannedPath)
-                break
+                self.receiveSensorData(currentPosition, checkHazard=True, checkSpot=True, checkColorBlob=True)
+                return
+
+        # 모든 이동이 끝난 이후, 마지막 지점에 대해 센서 작동
+        self.receiveSensorData(currentPosition, checkHazard=True, checkSpot=True, checkColorBlob=True)
 
     # 센서를 가동해서 센서의 값들을 불러오고 새로운 지점을 지도에 반영한다
     # 다음 경로를 입력받아서 경로 재계획이 필요한지 판단하여 반환
-    def receiveSensorData(self, currentPosition, nextPosition, isRotation=False):
-        # 센서 가동 명령을 내린다
-        revealedHazard = self.robotController.detectHazard(self.mapObject.getHazards())
-        revealedColorBlobs = self.robotController.detectColorBlob(self.mapObject.getColorBlobs())
-        actualPosition = self.robotController.detectPosition()
+    def receiveSensorData(self, currentPosition=None, checkHazard=False, checkColorBlob=False, checkSpot=False, checkCurrentPosition=False):
+        if checkHazard:
+            newHazard = self.robotController.detectHazard(self.mapObject.getHazards())
+            if newHazard:
+                newHazard.setRevealed()
 
-        # 회전만 한 경우는 위험 지점만 탐색
-        if isRotation:
-            # print(f"\tchecking hazard at {nextPosition}")
-            if nextPosition and revealedHazard:  # 다음 경로가 존재하지 않는다면 검사하지 않는다.
-                self.mapObject.revealHidden(revealedHazard)
-                return
-
-        for revealedColorBlob in revealedColorBlobs:
-            self.mapObject.revealHidden(revealedColorBlob)
-
-        # 실제 로봇 위치를 업데이트 한다
-        self.mapObject.setRobotCoord(actualPosition)
+        if checkColorBlob:
+            newColorBlobs = self.robotController.detectColorBlob(self.mapObject.getColorBlobs())
+            for newColorBlob in newColorBlobs:
+                newColorBlob.setRevealed()
 
         # 탐색 지점을 탐색 했는지 확인
-        spots = self.mapObject.getSpots()
-        for spot in spots:
-            if spot.getPosition() == actualPosition[:2] and not spot.isExplored():
-                spot.setExplored()
+        if checkSpot:
+            spots = self.mapObject.getSpots()
+            for spot in spots:
+                if spot.getPosition() == currentPosition[:2] and not spot.isExplored():
+                    spot.setExplored()
 
-        # 지시를 불이행 한 경우
-        if actualPosition != currentPosition:
-            print("\t Robot has malfunctioned!")
-            return True
-
-        # 위험 지점으로 인해 다음 경로가 막힌 경우
-        hazards = self.mapObject.getHazards()
-        for hazard in hazards:
-            if nextPosition and hazard.getPosition() == nextPosition[:2] and not hazard.isHidden():
-                print(f"\t Path obstructed when trying to move to {nextPosition[:2]}!")
-                return True
-
-        return False
+        if checkCurrentPosition:
+            actualPosition = self.robotController.detectPosition()
+            return actualPosition

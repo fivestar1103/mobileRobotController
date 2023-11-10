@@ -3,6 +3,7 @@ from Data_Structures.ColorBlob import ColorBlob
 from Data_Structures.Hazard import Hazard
 from Data_Structures.Spot import Spot
 
+
 class Map:
     def __init__(self):
         self.__mapLength: Tuple[int, int] = (0, 0)
@@ -70,7 +71,7 @@ class Map:
                     hazard.setRevealed()
 
     # 전체 맵 반환 - 꼭 필요한 것인지 모르겠음. 일단 디버깅 위해 추가
-    def getFullMap(self):
+    def printFullMap(self, whichMap=''):
         # 맵의 크기에 맞는 2차원 배열 생성
         cols, rows = self.getMapLength()
         fullMap = [['⚪󠀠󠀠' for _ in range(cols)] for _ in range(rows)]
@@ -91,5 +92,17 @@ class Map:
         # 로봇의 위치를 맵에 표시
         col, row, direction = self.__robotCoord
         fullMap[row][col] = '🤖'
-        
-        return fullMap
+
+        numberIconString = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
+        print(f"\n########## 🗺️ {whichMap} Map: ##########")
+        cols, rows = self.getMapLength()
+        for row in reversed(fullMap):
+            print(f"{numberIconString[rows - 1]}", end=' ')
+            rows -= 1
+            for col in row:
+                print(col, end=' ')
+            print()
+        print("  ", end=' ')
+        for colNum in range(cols):
+            print(f"{numberIconString[colNum]}", end=' ')
+        print()
