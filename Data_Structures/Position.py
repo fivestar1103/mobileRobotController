@@ -2,10 +2,9 @@ from typing import Tuple
 
 
 class Position:
-    def __init__(self, col, row, visited=False, hidden=False):
+    def __init__(self, col, row, status=False):
         self.__position = (col, row)
-        self.__visited = visited
-        self.__hidden = hidden
+        self.__status = status
 
     def setPosition(self, position: Tuple[int, int]):
         self.__position = position
@@ -13,14 +12,8 @@ class Position:
     def getPosition(self):
         return self.__position
 
-    def setVisited(self, visited: bool):
-        self.__visited = visited
+    def setStatus(self, status: bool):
+        self.__status = status
 
-    def getVisited(self):
-        return self.__visited
-
-    def setHidden(self, hidden: bool):
-        self.__hidden = hidden
-
-    def getHidden(self):
-        return self.__hidden
+    def getStatus(self):
+        return self.__status

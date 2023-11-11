@@ -2,6 +2,8 @@ from Data_Structures.Hazard import Hazard
 from Path_Planning_and_Map_Management.Map import Map
 from Path_Planning_and_Map_Management.PathPlanner import PathPlanner
 from Robot_Control_and_Monitoring.RobotController import RobotController
+from User_Interface.VoiceInputHandler import VoiceInputHandler
+
 
 # 이 클래스는 SIM을 제어하여 다음 기능을 수행한다 즉, add-on을 구현한 클래스이다
 # 계산된 경로를 토대로 SIM에 전진 또는 회전 명령을 내린다
@@ -14,6 +16,7 @@ class SIMController:
         self.mapObject = Map()
         self.pathPlanner = PathPlanner(self.mapObject)
         self.robotController = RobotController()
+        self.voiceInputHandler = VoiceInputHandler()
 
     def sendMovementCommand(self, path):
         # ----- 디버깅 용 - 경로 출력 ------
@@ -44,6 +47,25 @@ class SIMController:
             # ------- 디버깅 용 -------
             print(f"\n[Add-on]: Attempting to move to Point #{i}: {path[i]}...")
             # -----------------------
+
+            # ---------------- STT로 새로운 정보 입력 --------------- #
+            while True:
+                goOrStop = input("Go or Stop?: ")
+                if goOrStop.lower() in ["go", "stop"]:
+                    break
+                print("\tinvalid input...")
+            if goOrStop == "stop":
+                # 음성 인식
+                newPoints = self.voiceInputHandler.receiveVoiceInput()
+                self.mapObject.addNewPoints(newPoints)
+                # 새로운 정보를 기반으로 경로 재계획
+                print("\t\t📝 Replanning path...\n")
+                replannedPath = self.pathPlanner.planPath()
+                self.sendMovementCommand(replannedPath)
+                self.receiveSensorData(currentPosition, checkHazard=True, checkSpot=True, checkColorBlob=True)
+                return
+            print("\tContinuing...\n")
+            # --------------------------------------------------- #
 
             # 중요지점, 시작지점, 위험지점 여부 탐색
             self.receiveSensorData(currentPosition, checkColorBlob=True, checkSpot=True, checkHazard=True)

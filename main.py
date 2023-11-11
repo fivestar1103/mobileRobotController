@@ -11,21 +11,22 @@ if __name__ == "__main__":
 
     print("Initialize map: ")
     # 지도 정보 초기화
-    cols, rows = 10, 7
+    cols, rows = 9, 8
     robotCoord = (5, 1, 0)  # (5, 1)에 위치하고 북쪽을 바라보도록 초기화
     spots = [
-        Spot(4,4),
-        Spot(2,0),
-        Spot(1,2),
-        Spot(9,6)
+        Spot(4,4, False),
+        Spot(2,0, False),
+        Spot(1,2, False),
+        Spot(8,7, False),
+        Spot(0, 5, False)
     ]
     hazards = [
         Hazard(1, 1, False),
         Hazard(3,3, True),
         Hazard(4, 2, True),
-        Hazard(8, 6, True),
-        Hazard(8,5,True),
-        Hazard(8, 4, True),
+        Hazard(7, 7, True),
+        Hazard(7,6,True),
+        Hazard(7, 5, True),
     ]
     colorBlobs = [
         ColorBlob(3,1,True),

@@ -2,14 +2,15 @@ from Data_Structures.Position import Position
 
 
 class Spot(Position):
-    def __init__(self, col, row, explored=False):
-        super().__init__(col, row, visited=explored)
+    # Spot의 status: explored or unexplored
+    def __init__(self, col, row, explored):
+        super().__init__(col, row, status=explored)
 
     def isExplored(self):
-        return super().getVisited()
+        return super().getStatus()
 
     def setExplored(self):
-        super().setVisited(True)
+        super().setStatus(True)
         print(f"[Robot]: ✅Spot at {self.getPosition()} was explored!")
 
     def __str__(self):

@@ -11,15 +11,15 @@ class Map:
         self.__spots: List[Spot] = []
         self.__hazards: List[Hazard] = []
         self.__colorBlobs: List[ColorBlob] = []
-    
+
     #지도의 행과 열의 길이를 반환
-    def getMapLength(self): 
+    def getMapLength(self):
         return self.__mapLength
 
     #지도의 행과 열의 길이를 설정
     def setMapLength(self, cols, rows):
         self.__mapLength = (cols, rows)
-        
+
     #로봇의 위치 반환
     def getRobotCoord(self):
         return self.__robotCoord
@@ -51,13 +51,23 @@ class Map:
     def setColorBlobs(self, colorBlobs: List[ColorBlob]):
         self.__colorBlobs = colorBlobs
 
-    # 새로운 위험 지점 추가
-    def addHazard(self, hazard: Hazard):
-        self.__hazards.append(hazard)
-
-    # 새로운 중요 지점 추가
-    def addColorBlob(self, colorBlob: ColorBlob):
-        self.__colorBlobs.append(colorBlob)
+    # 새로운 지점 추가
+    def addNewPoints(self, newPoints: List):
+        newPointCount = 0
+        for newPoint in newPoints:
+            if type(newPoint) is Hazard:
+                if not any(hazard.getPosition() == newPoint.getPosition() for hazard in self.getHazards()):
+                    self.__hazards.append(newPoint)
+                    newPointCount += 1
+            elif type(newPoint) is ColorBlob:
+                if not any(colorBlob.getPosition() == newPoint.getPosition() for colorBlob in self.getColorBlobs()):
+                    self.__colorBlobs.append(newPoint)
+                    newPointCount += 1
+            elif type(newPoint) is Spot:
+                if not any(spot.getPosition() == newPoint.getPosition() for spot in self.getSpots()):
+                    self.__spots.append(newPoint)
+                    newPointCount += 1
+        print(f"\t{newPointCount} new points have been added...")
 
     # 숨겨진 지점을 공개된 지점으로 변경
     def revealHidden(self, point):
@@ -75,20 +85,20 @@ class Map:
         # 맵의 크기에 맞는 2차원 배열 생성
         cols, rows = self.getMapLength()
         fullMap = [['⚪󠀠󠀠' for _ in range(cols)] for _ in range(rows)]
-        
+
         # spots, hazards, colorBlobs를 맵에 표시
         for spot in self.__spots:  # '✅'는 방문한 탐색지점을 의미, '🎯'는 방문하지 않은 탐색지점
             col, row = spot.getPosition()
             fullMap[row][col] = '✅' if spot.isExplored() else '🎯'
-        
+
         for hazard in self.__hazards:  # 'h'는 숨겨진 위험 지점을 의미, '⚠'는 공개된 위험 지점
             col, row = hazard.getPosition()
             fullMap[row][col] = 'hh' if hazard.isHidden() else '⚠️'
-        
+
         for colorBlob in self.__colorBlobs:  # 'c'는 숨겨진 중요 지점을 의미, '🔵'는 공개된 중요 지점
             col, row = colorBlob.getPosition()
             fullMap[row][col] = 'cc' if colorBlob.isHidden() else '🔵'
-        
+
         # 로봇의 위치를 맵에 표시
         col, row, direction = self.__robotCoord
         fullMap[row][col] = '🤖'
