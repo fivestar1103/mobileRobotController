@@ -21,11 +21,11 @@ class RobotController:
         self.__currentPosition = (0, 0, 0)  # 로봇의 현재 위치와 방향
 
     # 로봇의 현재 위치를 반환
-    def getCurrentPosition(self):
+    def get_current_position(self):
         return self.__currentPosition
 
     # 로봇의 현재 위치를 설정
-    def setCurrentPosition(self, position):
+    def set_current_position(self, position):
         self.__currentPosition = position
 
     # 로봇을 앞으로 한칸 전진시킨다
@@ -35,7 +35,7 @@ class RobotController:
 
         movementAccordingToDirection = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
-        currentCol, currentRow, currentDirection = self.getCurrentPosition()
+        currentCol, currentRow, currentDirection = self.get_current_position()
 
         colDiff, rowDiff = movementAccordingToDirection[currentDirection]
         newCol, newRow = currentCol + colDiff * moveCount, currentRow + rowDiff * moveCount
@@ -44,7 +44,7 @@ class RobotController:
         isException = False
         # 2칸 앞이 hazard인 경우
         for hazard in hazards:
-            if hazard.getPosition() == (newCol, newRow):
+            if hazard.get_position() == (newCol, newRow):
                 isException = True
                 break
         # 맵 밖으로 이동하는 경우
@@ -55,7 +55,7 @@ class RobotController:
             newCol, newRow = currentCol + colDiff * moveCount, currentRow + rowDiff * moveCount
 
         newPosition = (newCol, newRow, currentDirection)
-        self.setCurrentPosition(newPosition)
+        self.set_current_position(newPosition)
 
         print(f"\tRobot has moved {moveCount} time(s) and now at {self.__currentPosition[:2]}")
 
@@ -64,22 +64,22 @@ class RobotController:
         currentDirection = self.__currentPosition[2]
         newDirection = (currentDirection + 1) % 4
         col, row = self.__currentPosition[:2]
-        self.setCurrentPosition((col, row, newDirection))
+        self.set_current_position((col, row, newDirection))
 
         directionDict = ['N', 'E', 'S', 'W']
         print(f"\tRobot has rotated and now facing {directionDict[self.__currentPosition[2]]}")
 
     # 센서를 통해 위험 지점 감지
-    def detectHazard(self, hazards) -> Hazard:
+    def detect_hazard(self, hazards) -> Hazard:
         hazardSensor = HazardSensor()
-        return hazardSensor.detectHazard(self.getCurrentPosition(), hazards)
+        return hazardSensor.detect_hazard(self.get_current_position(), hazards)
 
     # 센서를 통해 중요 지점 감지
-    def detectColorBlob(self, colorBlobs) -> List[ColorBlob]:
+    def detect_color_blob(self, colorBlobs) -> List[ColorBlob]:
         colorBlobSensor = ColorBlobSensor()
-        return colorBlobSensor.detectColorBlob(self.getCurrentPosition(), colorBlobs)
+        return colorBlobSensor.detect_color_blob(self.get_current_position(), colorBlobs)
 
     # 센서를 통해 현재 위치 감지
-    def detectPosition(self):
+    def detect_position(self):
         positionSensor = PositionSensor()
-        return positionSensor.detectPosition(self.getCurrentPosition())
+        return positionSensor.detect_position(self.get_current_position())

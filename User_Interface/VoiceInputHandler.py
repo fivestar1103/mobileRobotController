@@ -3,7 +3,7 @@ from Data_Structures.Hazard import Hazard
 
 
 class VoiceInputHandler:
-    def receiveVoiceInput(self):
+    def receive_voice_input(self):
         print("[Voice Input Handler]: 🎙️Voice recognition successful...")
         newPoints = [
             Hazard(1, 5, True),
@@ -13,5 +13,5 @@ class VoiceInputHandler:
         ]
         return newPoints
 
-    def processVoiceCommand(self):
+    def process_voice_command(self):
         pass

@@ -6,12 +6,12 @@ class Spot(Position):
     def __init__(self, col, row, explored):
         super().__init__(col, row, status=explored)
 
-    def isExplored(self):
-        return super().getStatus()
+    def is_explored(self):
+        return super().get_status()
 
-    def setExplored(self):
-        super().setStatus(True)
-        print(f"[Robot]: ✅Spot at {self.getPosition()} was explored!")
+    def set_explored(self):
+        super().set_status(True)
+        print(f"[Robot]: ✅Spot at {self.get_position()} was explored!")
 
     def __str__(self):
-        return f"Spot({self.getPosition()}, Explored: {self.isExplored()})"
+        return f"Spot({self.get_position()}, Explored: {self.is_explored()})"

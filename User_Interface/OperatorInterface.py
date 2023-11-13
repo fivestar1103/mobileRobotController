@@ -2,14 +2,14 @@ class OperatorInterface:
     def __init__(self):
         self._voiceInput = None
 
-    def getVoiceInput(self):
+    def get_voice_input(self):
         return self._voiceInput
 
-    def setVoiceInput(self, value):
+    def set_voice_input(self, value):
         self._voiceInput = value
 
-    def inputMapData(self):
+    def input_map_data(self):
         pass
 
-    def captureVoiceInput(self):
+    def capture_voice_input(self):
         pass

@@ -6,19 +6,19 @@ class Sensor:
         self.__sensorType = None
         self.__sensorData = None
 
-    def getSensorType(self):
+    def get_sensor_type(self):
         return self.__sensorType
 
-    def setSensorType(self, value: str):  # H: Hazard, C: ColorBlob, P: Position
+    def set_sensor_type(self, value: str):  # H: Hazard, C: ColorBlob, P: Position
         if value not in ("H", "C", "P"):
             raise ValueError("value must be one of 'H', 'C', or 'P'")
         self.__sensorType = value
 
-    def getSensorData(self):
+    def get_sensor_data(self):
         return self.__sensorData
 
-    def setSensorData(self, value: List[Tuple]):
+    def set_sensor_data(self, value: List[Tuple]):
         self.__sensorData = value
 
-    def readSensor(self, position: Tuple):
+    def read_sensor(self, position: Tuple):
         raise NotImplementedError("Sensors must implement readSensor()")

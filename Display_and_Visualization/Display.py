@@ -1,9 +1,9 @@
 class Display:
-    def displayMap(self):
+    def display_map(self):
         pass
 
-    def displayRobot(self):
+    def display_robot(self):
         pass
 
-    def displayPath(self):
+    def display_path(self):
         pass

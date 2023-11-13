@@ -6,14 +6,14 @@ class Position:
         self.__position = (col, row)
         self.__status = status
 
-    def setPosition(self, position: Tuple[int, int]):
+    def set_position(self, position: Tuple[int, int]):
         self.__position = position
 
-    def getPosition(self):
+    def get_position(self):
         return self.__position
 
-    def setStatus(self, status: bool):
+    def set_status(self, status: bool):
         self.__status = status
 
-    def getStatus(self):
+    def get_status(self):
         return self.__status

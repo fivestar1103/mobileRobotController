@@ -35,26 +35,26 @@ if __name__ == "__main__":
     ]
 
     mapInstance = addOn.mapObject
-    mapInstance.setMapLength(cols, rows)
-    mapInstance.setRobotCoord(robotCoord)
-    mapInstance.setSpots(spots)
-    mapInstance.setHazards(hazards)
-    mapInstance.setColorBlobs(colorBlobs)
+    mapInstance.set_map_length(cols, rows)
+    mapInstance.set_robot_coord(robotCoord)
+    mapInstance.set_spots(spots)
+    mapInstance.set_hazards(hazards)
+    mapInstance.set_color_blobs(colorBlobs)
 
     # 초기 맵 상태 출력
     print("\tMap initialized...")
-    mapInstance.printFullMap("Initial")
+    mapInstance.print_full_map("Initial")
 
     # 경로 계산
-    pathPlannerInstance = addOn.pathPlanner
-    newPath = pathPlannerInstance.planPath()
+    addOn.set_path()
 
     # 이동 지시
-    addOn.robotController.setCurrentPosition(robotCoord)
-    addOn.sendMovementCommand(newPath)
+    addOn.robotController.set_current_position(robotCoord)
+    addOn.send_movement_command()
 
     print("\n⭐ All Spots Have Been Explored!\n")
     # 최종 맵 상태 출력
-    mapInstance.printFullMap("Final")
+    mapInstance.print_full_map("Final")
 
     print("\n\tExiting... Good bye!")
+
