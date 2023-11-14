@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 import turtle 
 
 class Display:
-    def __init__(self, master, n, m, a, b, color_blob_pairs, hazard_pairs, spot_pairs):
+    def __init__(self, master, n, m, a, b, spot_pairs, color_blob_pairs, hazard_pairs):
         self.master = master
         self.master.title('Display Window')
 
@@ -23,14 +23,11 @@ class Display:
                 c.create_rectangle(x, y, x + grid_size, y + grid_size, outline='black')
 
         # Load and display the robot image at the specified start location
-        robot_image = Image.open("C:/Users/Aiganym(01021515882)/Desktop/robot.jpg")
-        robot_image = robot_image.resize((grid_size, grid_size), Image.ANTIALIAS)
+        robot_image = PhotoImage.open("C:/Users/Aiganym(01021515882)/Desktop/robot.jpg", width=30, height=30)
         self.robot_photo = ImageTk.PhotoImage(robot_image)
-
-        c.create_image(a * grid_size, b * grid_size, anchor=tk.NW, image=self.robot_photo)
-
+        
         #Draw
-        for pair in color_blob_pairs:
+        for pair in spot_pairs:
             x, y = map(int, pair)
             self.draw_star(c, x, y, grid_size)
 
@@ -38,7 +35,7 @@ class Display:
             x, y = map(int, pair)
             self.draw_circle(c, x, y, grid_size)
 
-        for pair in spot_pairs:
+        for pair in color_blob_pairs:
             x, y = map(int, pair)
             self.draw_rectangle(c, x, y, grid_size)    
         gui.mainloop()
@@ -46,23 +43,24 @@ class Display:
     def draw_star(self, canvas, x, y, grid_size, color="yellow"):
         angle = 120
         canvas.create_polygon(
-            x, y - size,
-            x + size * 0.15, y - size * 0.35,
-            x + size, y - size,
-            x + size * 0.35, y - size * 0.15,
-            x + size * 0.5, y,
-            x + size * 0.35, y + size * 0.15,
-            x + size, y + size,
-            x + size * 0.15, y + size * 0.35,
-            x, y + size,
-            x - size * 0.15, y + size * 0.35,
-            x - size, y + size,
-            x - size * 0.35, y + size * 0.15,
-            x - size * 0.5, y,
-            x - size * 0.35, y - size * 0.15,
+            x, y - grid_size,
+            x + grid_size * 0.15, y - grid_size * 0.35,
+            x + grid_size, y - grid_size,
+            x + grid_size * 0.35, y - grid_size * 0.15,
+            x + grid_size * 0.5, y,
+            x + grid_size * 0.35, y + grid_size * 0.15,
+            x + grid_size, y + grid_size,
+            x + grid_size * 0.15, y + grid_size * 0.35,
+            x, y + grid_size,
+            x - grid_size * 0.15, y + grid_size * 0.35,
+            x - grid_size, y + grid_size,
+            x - grid_size * 0.35, y + grid_size * 0.15,
+            x - grid_size * 0.5, y,
+            x - grid_size * 0.35, y - grid_size * 0.15,
             fill=color,
             outline=color
-        )       
+        )   
+
     def draw_circle(self, canvas, x, y, grid_size, color="black"):
         size = grid_size * 0.5
         canvas.create_oval(
@@ -77,7 +75,7 @@ class Display:
             x * grid_size + size, y * grid_size + size,
             fill=color, outline=color
         )
-        
+
 class OperatorInterface:
     def __init__(self, master):
         self.master = master
@@ -142,11 +140,11 @@ class OperatorInterface:
        
     def open_result_window(self):
         # Get the entered data
-        map_data = self.map_var.get()
-        start_data = self.start_var.get()
-        spot_data = self.spot_var.get()
-        color_data = self.colorBlob_var.get()
-        hazard_data = self.hazard_var.get()
+        map_data = self.map_entry.get()
+        start_data = self.start_entry.get()
+        spot_data = self.spot_entry.get()
+        color_data = self.colorBlob_entry.get()
+        hazard_data = self.hazard_entry.get()
 
         # Split the map_data and convert to integers
         map_values = map_data.split()
@@ -169,7 +167,7 @@ class OperatorInterface:
         
         # Create a new window with the received data
         result_window = tk.Toplevel(self.master)
-        Display(result_window, n, m, a, b, color_blob_pairs, hazard_pairs)
+        Display(result_window, n, m, a, b, spot_pairs, color_blob_pairs, hazard_pairs)
 
 if __name__ == "__main__":
     root = tk.Tk()
