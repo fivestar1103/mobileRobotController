@@ -2,6 +2,8 @@ from Data_Structures.ColorBlob import ColorBlob
 from Data_Structures.Spot import Spot
 from Data_Structures.Hazard import Hazard
 from Robot_Control_and_Monitoring.SIMController import SIMController
+from User_Interface.OperatorInterface import OperatorInterface
+import tkinter as tk
 
 if __name__ == "__main__":
     print("Hello! Booting...")

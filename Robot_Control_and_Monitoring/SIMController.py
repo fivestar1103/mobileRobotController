@@ -1,3 +1,4 @@
+from Display_and_Visualization.Display import Display
 from Path_Planning_and_Map_Management.Map import Map
 from Path_Planning_and_Map_Management.PathPlanner import PathPlanner
 from Robot_Control_and_Monitoring.RobotController import RobotController
@@ -17,6 +18,7 @@ class SIMController:
         self.pathPlanner = PathPlanner(self.mapObject)
         self.robotController = RobotController()
         self.voiceInputHandler = VoiceInputHandler()
+        self.display = Display(self.mapObject)
 
     def get_path(self):
         return self.__path
