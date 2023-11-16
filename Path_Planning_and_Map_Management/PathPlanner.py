@@ -66,7 +66,7 @@ class PathPlanner:
 
     # 최단 경로 구하기
     def plan_path(self):
-        self.__map.print_full_map()
+        # self.__map.print_full_map()
 
         start = self.__map.get_robot_coord()  # 로봇의 현재 위치
         goals = [spot.get_position() for spot in self.__map.get_spots() if not spot.is_explored()]  # 방문하지 않은 탐색 지점

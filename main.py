@@ -1,6 +1,7 @@
 from Data_Structures.ColorBlob import ColorBlob
 from Data_Structures.Spot import Spot
 from Data_Structures.Hazard import Hazard
+from Display_and_Visualization.Display import Display
 from Robot_Control_and_Monitoring.SIMController import SIMController
 
 if __name__ == "__main__":
@@ -34,12 +35,13 @@ if __name__ == "__main__":
         ColorBlob(4,5,True)
     ]
 
-    mapInstance = addOn.mapObject
+    mapInstance = addOn.mapInstance
     mapInstance.set_map_length(cols, rows)
     mapInstance.set_robot_coord(robotCoord)
     mapInstance.set_spots(spots)
     mapInstance.set_hazards(hazards)
     mapInstance.set_color_blobs(colorBlobs)
+    addOn.robotController.set_current_position(robotCoord)
 
     # 초기 맵 상태 출력
     print("\tMap initialized...")
@@ -48,9 +50,10 @@ if __name__ == "__main__":
     # 경로 계산
     addOn.set_path()
 
-    # 이동 지시
-    addOn.robotController.set_current_position(robotCoord)
-    addOn.send_movement_command()
+    addOn.display = Display(addOn)
+    addOn.display.run()
+
+    # addOn.send_movement_command()
 
     print("\n⭐ All Spots Have Been Explored!\n")
     # 최종 맵 상태 출력
