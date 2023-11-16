@@ -1,4 +1,4 @@
-from Display_and_Visualization.Display import Display
+import sys
 from Path_Planning_and_Map_Management.Map import Map
 from Path_Planning_and_Map_Management.PathPlanner import PathPlanner
 from Robot_Control_and_Monitoring.RobotController import RobotController
@@ -17,7 +17,7 @@ class SIMController:
         self.pathPlanner = PathPlanner(self.mapInstance)
         self.robotController = RobotController()
         self.voiceInputHandler = VoiceInputHandler()
-        self.waitTime = 1000
+        self.waitTime = 250
 
     def get_path(self):
         return self.__path
@@ -27,11 +27,9 @@ class SIMController:
         self.__path = self.pathPlanner.get_current_path()
         return
 
-    def start_movement(self):
-        # Start the movement command with a delay
-        self.display.master.after(self.waitTime, self.send_movement_command)
-
     def send_movement_command(self):
+        if self.display.isStop:
+            return
         self.receive_sensor_data(checkColorBlob=True, checkSpot=True, checkHazard=True)
 
         if self.__path:
@@ -39,13 +37,16 @@ class SIMController:
             nextPosition = self.__path[-1]
 
             direction = ["N", "E", "S", "W"]
-            print(f"\n[Add-on]: Currently at {currentPosition[:2]} facing {direction[currentPosition[2]]}, attempting to move to {nextPosition}...")
+            print(
+                f"\n[Add-on]: Currently at {currentPosition[:2]} facing {direction[currentPosition[2]]}, attempting to move to {nextPosition}...")
 
-            rotations = self.calculate_rotation(nextPosition)
-            for _ in range(rotations):
+            isRotationRequired = self.calculate_rotation(nextPosition)
+            if isRotationRequired:
                 self.execute_rotation()
-                self.receive_sensor_data(checkHazard=True)
-            self.execute_move_and_plan()
+                # Schedule the next rotation or movement after the wait time
+                self.display.master.after(self.waitTime, self.send_movement_command)
+            else:
+                self.execute_move_and_plan()
         else:
             self.complete_movement_process()
 
@@ -57,25 +58,19 @@ class SIMController:
             -1: 2,  # down
             -2: 3  # left
         }
-        # 위에서 계산한 movement에 따른 필요 회전 수
-        rotationDict = [[0, 3, 2, 1],
-                        [1, 0, 3, 2],
-                        [2, 1, 0, 3],
-                        [3, 2, 1, 0]]
-
         nextCol, nextRow = nextPosition
         currentPosition = self.mapInstance.get_robot_coord()
         currentCol, currentRow, currentDirection = currentPosition
         colDiff, rowDiff = nextCol - currentCol, nextRow - currentRow
         movement = movementDict[2 * colDiff + rowDiff]
-        requiredTurns = rotationDict[movement][currentDirection]
-        # isRotationRequired = True if movement != currentDirection else False
-        return requiredTurns
+        isRotationRequired = False if movement == currentDirection else True
+        return isRotationRequired
 
     def execute_rotation(self):
         self.robotController.rotate()
         self.mapInstance.rotate_robot_on_map()
         self.display.update_display()
+        self.display.master.after(self.waitTime)  # Then wait for the specified time
 
     def execute_move_and_plan(self):
         # Check if the next position is blocked by a revealed hazard
@@ -88,13 +83,17 @@ class SIMController:
 
             # Check if the next position is a hazard
             if nextPosition in revealedHazards:
+                self.display.update_display()
+                self.display.master.after(self.waitTime)
+                self.display.master.update_idletasks()
                 print(f"\t🚧 Path obstructed! Replanning path...")
+                self.display.alert("🚧 Path obstructed!\nReplanning path...")
                 self.replanPath()
             else:
                 # If the path is clear, execute the move
                 self.execute_move()
                 self.check_correct_movement()
-                self.display.master.after(self.waitTime, self.send_movement_command)
+            self.display.master.after(self.waitTime, self.send_movement_command)
         else:
             # If the path is complete, finalize the movement process
             self.complete_movement_process()
@@ -103,6 +102,7 @@ class SIMController:
         self.robotController.move(self.mapInstance.get_hazards(), self.mapInstance.get_map_length())
         self.mapInstance.move_robot_on_map()
         self.display.update_display()
+        self.display.master.after(self.waitTime)  # Then wait for the specified time
 
     # 센서를 가동해서 센서의 값들을 불러오고 새로운 지점을 지도에 반영한다
     def receive_sensor_data(self, checkHazard=False, checkColorBlob=False, checkSpot=False,
@@ -124,9 +124,17 @@ class SIMController:
                 currentPosition = self.mapInstance.get_robot_coord()
                 if spot.get_position() == currentPosition[:2] and not spot.is_explored():
                     spot.set_explored()
+            unexploredSpots = [spot for spot in spots if not spot.is_explored()]
+            if len(unexploredSpots) == 0:
+                print("All spots explored!")
+                self.display.update_display()
+                self.display.master.update_idletasks()
+                self.display.alert("⭐ All Spots Have Been Explored!")
+                sys.exit()
 
         if checkCurrentPosition:
             actualPosition = self.robotController.detect_position()
+            self.display.update_display()
             return actualPosition
 
         self.display.update_display()
@@ -158,19 +166,26 @@ class SIMController:
 
     # 다음 경로를 입력받아서 경로 재계획이 필요한지 판단하여 반환
     def replanPath(self):
+        self.display.update_display()
         print("\t\t📝 Replanning path...\n")
         self.set_path()
-        if not self.__path:
-            self.complete_movement_process()
-        else:
-            self.start_movement()  # Restart the movement process with the new path
 
     def check_correct_movement(self):
         currentPosition = self.mapInstance.get_robot_coord()
         actualPosition = self.receive_sensor_data(checkCurrentPosition=True)
+
         if actualPosition != currentPosition:
             print("\t❌ Robot has malfunctioned!!!")
             self.mapInstance.set_robot_coord(actualPosition)
+
+            # Update the display with the new position before alerting.
             self.display.update_display()
+            # Ensure the GUI updates before the alert.
+            self.display.master.update_idletasks()
+
+            # Now show the alert.
+
+            self.display.alert("❌ Robot has malfunctioned!!!\nReplanning path...")
+            # Replan the path considering the new position
             self.replanPath()
-            self.start_movement()
+

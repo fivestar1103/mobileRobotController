@@ -31,7 +31,7 @@ class RobotController:
     # 로봇을 앞으로 한칸 전진시킨다
     def move(self, hazards, mapLength):
         prob = random.randint(1, 11)
-        moveCount = 1 if prob > 3 else 2  # 30% 확률로 2칸 이동
+        moveCount = 1 if prob > 1 else 2  # 10% 확률로 2칸 이동
 
         movementAccordingToDirection = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 

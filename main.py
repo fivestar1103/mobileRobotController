@@ -3,6 +3,7 @@ from Data_Structures.Spot import Spot
 from Data_Structures.Hazard import Hazard
 from Display_and_Visualization.Display import Display
 from Robot_Control_and_Monitoring.SIMController import SIMController
+from Display_and_Visualization.Display import Display
 
 if __name__ == "__main__":
     print("Hello! Booting...")
