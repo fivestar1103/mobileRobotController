@@ -17,7 +17,7 @@ class SIMController:
         self.pathPlanner = PathPlanner(self.mapInstance)
         self.robotController = RobotController()
         self.voiceInputHandler = VoiceInputHandler()
-        self.waitTime = 250
+        self.waitTime = 100
 
     def get_path(self):
         return self.__path
@@ -87,7 +87,7 @@ class SIMController:
                 self.display.master.after(self.waitTime)
                 self.display.master.update_idletasks()
                 print(f"\t🚧 Path obstructed! Replanning path...")
-                self.display.alert("🚧 Path obstructed!\nReplanning path...")
+                self.display.log_message(f"🚧 Path obstructed at {nextPosition}!\n\tReplanning path...\n")
                 self.replanPath()
             else:
                 # If the path is clear, execute the move
@@ -111,11 +111,13 @@ class SIMController:
             newHazard = self.robotController.detect_hazard(self.mapInstance.get_hazards())
             if newHazard:
                 newHazard.set_revealed()
+                self.display.log_message(f"⚠️Hazard uncovered at {newHazard.get_position()}\n")
 
         if checkColorBlob:
             newColorBlobs = self.robotController.detect_color_blob(self.mapInstance.get_color_blobs())
             for newColorBlob in newColorBlobs:
                 newColorBlob.set_revealed()
+                self.display.log_message(f"🔵 ColorBlob uncovered at {newColorBlob.get_position()}\n")
 
         # 탐색 지점을 탐색 했는지 확인
         if checkSpot:
@@ -124,12 +126,14 @@ class SIMController:
                 currentPosition = self.mapInstance.get_robot_coord()
                 if spot.get_position() == currentPosition[:2] and not spot.is_explored():
                     spot.set_explored()
+                    self.display.log_message(f"✅ Spot visited at {spot.get_position()}\n")
+
             unexploredSpots = [spot for spot in spots if not spot.is_explored()]
             if len(unexploredSpots) == 0:
                 print("All spots explored!")
                 self.display.update_display()
                 self.display.master.update_idletasks()
-                self.display.alert("⭐ All Spots Have Been Explored!")
+                self.display.alert("⭐ All Spots Have Been Explored! Exiting...")
                 sys.exit()
 
         if checkCurrentPosition:
@@ -184,8 +188,7 @@ class SIMController:
             self.display.master.update_idletasks()
 
             # Now show the alert.
-
-            self.display.alert("❌ Robot has malfunctioned!!!\nReplanning path...")
+            self.display.log_message(f"❌ Robot has malfunctioned at {currentPosition[:2]}!\n\tReplanning path...\n")
             # Replan the path considering the new position
             self.replanPath()
 

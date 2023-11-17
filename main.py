@@ -31,7 +31,7 @@ if __name__ == "__main__":
         Hazard(7, 5, True),
     ]
     colorBlobs = [
-        ColorBlob(3,1,True),
+        ColorBlob(3,1,False),
         ColorBlob(4,3,True),
         ColorBlob(4,5,True)
     ]
