@@ -1,4 +1,3 @@
-import sys
 from Path_Planning_and_Map_Management.Map import Map
 from Path_Planning_and_Map_Management.PathPlanner import PathPlanner
 from Robot_Control_and_Monitoring.RobotController import RobotController
@@ -16,8 +15,8 @@ class SIMController:
         self.display = None
         self.pathPlanner = PathPlanner(self.mapInstance)
         self.robotController = RobotController()
-        self.voiceInputHandler = VoiceInputHandler()
         self.waitTime = 100
+        self.allGoalsVisited = False
 
     def get_path(self):
         return self.__path
@@ -73,6 +72,7 @@ class SIMController:
         self.display.master.after(self.waitTime)  # Then wait for the specified time
 
     def execute_move_and_plan(self):
+        originalPosition = self.mapInstance.get_robot_coord()
         # Check if the next position is blocked by a revealed hazard
         hazards = self.mapInstance.get_hazards()
         revealedHazards = [hazard.get_position() for hazard in hazards if not hazard.is_hidden()]
@@ -83,16 +83,15 @@ class SIMController:
 
             # Check if the next position is a hazard
             if nextPosition in revealedHazards:
-                self.display.update_display()
                 self.display.master.after(self.waitTime)
-                self.display.master.update_idletasks()
                 print(f"\t🚧 Path obstructed! Replanning path...")
                 self.display.log_message(f"🚧 Path obstructed at {nextPosition}!\n\tReplanning path...\n")
-                self.replanPath()
+                self.replan_path()
             else:
                 # If the path is clear, execute the move
                 self.execute_move()
-                self.check_correct_movement()
+                self.check_correct_movement(originalPosition)
+
             self.display.master.after(self.waitTime, self.send_movement_command)
         else:
             # If the path is complete, finalize the movement process
@@ -101,7 +100,6 @@ class SIMController:
     def execute_move(self):
         self.robotController.move(self.mapInstance.get_hazards(), self.mapInstance.get_map_length())
         self.mapInstance.move_robot_on_map()
-        self.display.update_display()
         self.display.master.after(self.waitTime)  # Then wait for the specified time
 
     # 센서를 가동해서 센서의 값들을 불러오고 새로운 지점을 지도에 반영한다
@@ -130,65 +128,56 @@ class SIMController:
 
             unexploredSpots = [spot for spot in spots if not spot.is_explored()]
             if len(unexploredSpots) == 0:
-                print("All spots explored!")
                 self.display.update_display()
-                self.display.master.update_idletasks()
-                self.display.alert("⭐ All Spots Have Been Explored! Exiting...")
-                sys.exit()
+                self.complete_movement_process()
 
         if checkCurrentPosition:
             actualPosition = self.robotController.detect_position()
-            self.display.update_display()
             return actualPosition
 
         self.display.update_display()
         self.display.master.after(self.waitTime)
 
     def complete_movement_process(self):
-        # Logic to be executed once all moves are completed
-        print("All moves completed")
-        self.display.master.destroy()
-        exit()
+        if not self.allGoalsVisited:  # Check if the flag is False
+            self.allGoalsVisited = True  # Set the flag to True
+            self.__path = []
+            print("All spots explored!")
+            self.display.alert("⭐ All Spots Have Been Explored!")
+            self.display.on_goOrStop()
 
     # 한 지점으로 이동하기 전마다 음성인식으로 추가할 것인지 묻고 인터럽트 여부를 반환
-    def handle_voice_input(self):
-        while True:
-            goOrStop = input("Go or Stop?: ")
-            if goOrStop.lower() in ["go", "stop"]:
-                break
-            print("\tinvalid input...")
-        if goOrStop == "stop":
-            # 음성 인식
-            newPoints = self.voiceInputHandler.receive_voice_input()
-            self.mapInstance.add_new_points(newPoints)
-            # 새로운 정보를 기반으로 경로 재계획
-            self.replanPath()
-            return True
-        else:
-            print("\tContinuing as planned...\n")
-            return False
+    # def handle_voice_input(self):
+    #     while True:
+    #         goOrStop = input("Go or Stop?: ")
+    #         if goOrStop.lower() in ["go", "stop"]:
+    #             break
+    #         print("\tinvalid input...")
+    #     if goOrStop == "stop":
+    #         # 음성 인식
+    #         newPoints = self.voiceInputHandler.receive_voice_input()
+    #         self.mapInstance.add_new_points(newPoints)
+    #         # 새로운 정보를 기반으로 경로 재계획
+    #         self.replan_path()
+    #         return True
+    #     else:
+    #         print("\tContinuing as planned...\n")
+    #         return False
 
-    # 다음 경로를 입력받아서 경로 재계획이 필요한지 판단하여 반환
-    def replanPath(self):
-        self.display.update_display()
+    def replan_path(self):
         print("\t\t📝 Replanning path...\n")
         self.set_path()
 
-    def check_correct_movement(self):
+    def check_correct_movement(self, originalPosition):
         currentPosition = self.mapInstance.get_robot_coord()
         actualPosition = self.receive_sensor_data(checkCurrentPosition=True)
 
         if actualPosition != currentPosition:
             print("\t❌ Robot has malfunctioned!!!")
+            self.display.log_message(f"❌ Robot has malfunctioned at {originalPosition[:2]}!\n\tReplanning path...\n")
             self.mapInstance.set_robot_coord(actualPosition)
 
-            # Update the display with the new position before alerting.
-            self.display.update_display()
-            # Ensure the GUI updates before the alert.
-            self.display.master.update_idletasks()
-
-            # Now show the alert.
-            self.display.log_message(f"❌ Robot has malfunctioned at {currentPosition[:2]}!\n\tReplanning path...\n")
-            # Replan the path considering the new position
-            self.replanPath()
+            self.replan_path()
+        self.display.update_display()
+        self.display.master.after(self.waitTime)  # Then wait for the specified time
 

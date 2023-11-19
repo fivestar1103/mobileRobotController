@@ -73,6 +73,8 @@ class PathPlanner:
         hazards = {hazard.get_position() for hazard in self.__map.get_hazards() if not hazard.is_hidden()}  # 공개된 위험 지점
         path = [start]
 
+        print(goals)
+
         while goals:
             next_goal = min(goals, key=lambda x: self.__heuristic(path[-1], x))
             goals.remove(next_goal)

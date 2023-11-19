@@ -83,15 +83,18 @@ class Map:
                 if not any(hazard.get_position() == newPoint.get_position() for hazard in self.get_hazards()):
                     self.__hazards.append(newPoint)
                     newPointCount += 1
+                    print("new hazard!")
             elif type(newPoint) is ColorBlob:
                 if not any(colorBlob.get_position() == newPoint.get_position() for colorBlob in self.get_color_blobs()):
                     self.__colorBlobs.append(newPoint)
                     newPointCount += 1
+                    print("new colorBlob!")
             elif type(newPoint) is Spot:
                 if not any(spot.get_position() == newPoint.get_position() for spot in self.get_spots()):
                     self.__spots.append(newPoint)
                     newPointCount += 1
-        print(f"\t{newPointCount} new points have been added...")
+                    print("new spot!")
+        print(f"\t{newPointCount} new point(s) have been added...")
 
     # 숨겨진 지점을 공개된 지점으로 변경
     def reveal_hidden(self, point):

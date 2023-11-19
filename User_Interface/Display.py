@@ -2,9 +2,12 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import ImageTk, Image
 
+from User_Interface.VoiceInputHandler import VoiceInputHandler
+
 
 class Display:
     def __init__(self, SIMControllerInstance, master=None):
+        self.auto_move_button = None
         self.log_counter = 0
         self.on_mic = None
         self.mic_button = None
@@ -20,14 +23,12 @@ class Display:
 
         self.mic_button_enabled_image = None
         self.mic_button_disabled_image = None
-        self.go_button_enabled_image = None
-        self.go_button_disabled_image = None
-        self.stop_button_enabled_image = None
-        self.stop_button_disabled_image = None
-        self.stop_button = None
-        self.go_button = None
+        self.go_button_image = None
+        self.stop_button_image = None
+        self.goOrStop_button = None
+        self.autoMove = False
 
-        self.axis_padding = 10
+        self.axis_padding = 15
         self.cell_size = 50
 
         self.color1 = "#79D6F7"
@@ -70,7 +71,7 @@ class Display:
         self.log_frame.grid(row=1, column=2, sticky="nsew", padx=(5, 10), pady=(10, 5))
 
         # Initialize the canvas
-        self.canvas = tk.Canvas(self.canvas_frame, width=self.canvas_width, height=self.canvas_height, bg='white',
+        self.canvas = tk.Canvas(self.canvas_frame, width=self.canvas_width, height=self.canvas_height, bg='lightgray',
                                 highlightbackground="black")
         self.canvas.pack(side='top', fill='both', expand=True)
 
@@ -95,10 +96,8 @@ class Display:
 
         # Draw axes and update the display
         self.draw_axes()
-        self.update_display()
-
-        # Set the window to open in the center of the screen
         self.center_window()
+        self.update_display()
 
     def load_images(self):
         # Load robot images
@@ -121,14 +120,10 @@ class Display:
         self.Spot_visited_image = ImageTk.PhotoImage(
             Image.open("assets/Spot_visited.png").resize((self.cell_size, self.cell_size)))
 
-        self.go_button_enabled_image = ImageTk.PhotoImage(
-            Image.open("assets/go_button_enabled.png").resize((self.cell_size, self.cell_size)))
-        self.go_button_disabled_image = ImageTk.PhotoImage(
-            Image.open("assets/go_button_disabled.png").resize((self.cell_size, self.cell_size)))
-        self.stop_button_enabled_image = ImageTk.PhotoImage(
-            Image.open("assets/stop_button_enabled.png").resize((self.cell_size, self.cell_size)))
-        self.stop_button_disabled_image = ImageTk.PhotoImage(
-            Image.open("assets/stop_button_disabled.png").resize((self.cell_size, self.cell_size)))
+        self.go_button_image = ImageTk.PhotoImage(
+            Image.open("assets/go_button.png").resize((self.cell_size, self.cell_size)))
+        self.stop_button_image = ImageTk.PhotoImage(
+            Image.open("assets/stop_button.png").resize((self.cell_size, self.cell_size)))
         self.mic_button_enabled_image = ImageTk.PhotoImage(
             Image.open("assets/mic_button_enabled.png").resize((self.cell_size, self.cell_size)))
         self.mic_button_disabled_image = ImageTk.PhotoImage(
@@ -150,37 +145,78 @@ class Display:
         self.log_text.config(state='disabled')
 
     def create_buttons(self):
-        self.go_button = tk.Button(self.button_frame, image=self.go_button_disabled_image, command=self.on_go,
-                                   borderwidth=0, highlightthickness=0, bg=self.color3)
-        self.go_button.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
+        self.button_frame.pack_propagate(False)
+        self.button_frame.config(width=120, height=140)
 
-        self.stop_button = tk.Button(self.button_frame, image=self.stop_button_enabled_image, command=self.on_stop)
-        self.stop_button.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
+        self.auto_move_button = tk.Button(self.button_frame, command=self.toggle_auto_move, text="Auto Move Off",
+                                          borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat', width=8
+                                          )
+        self.auto_move_button.pack(side=tk.TOP, pady=2, fill=tk.NONE)
 
-        # Initialize the microphone button in a disabled state
-        self.mic_button = tk.Button(self.button_frame, image=self.mic_button_disabled_image, command=self.on_mic,
-                                    state=tk.DISABLED)
-        self.mic_button.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
+        initial_image = self.go_button_image if self.isStop else self.stop_button_image
+        self.goOrStop_button = tk.Button(self.button_frame, image=initial_image, command=self.on_goOrStop,
+                                         borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat')
+        self.goOrStop_button.image = initial_image  # Keep a reference
+        self.goOrStop_button.pack(side=tk.TOP, fill=tk.NONE, pady=2)
 
-    def on_go(self):
-        self.isStop = False
-        # Change the button image to indicate it's active
-        self.go_button.config(image=self.go_button_enabled_image)
-        self.stop_button.config(image=self.stop_button_disabled_image)
-        self.mic_button.config(image=self.mic_button_disabled_image, state=tk.DISABLED)
-        self.SIMControllerInstance.send_movement_command()
+        # Initialize the microphone button in an enabled state
+        # In the Display class, inside the create_buttons method
+        self.mic_button = tk.Button(
+            self.button_frame,
+            image=self.mic_button_enabled_image,
+            command=self.on_mic_click,  # Make sure this line is correct
+            state=tk.NORMAL,
+            borderwidth=0,
+            highlightthickness=0,
+            compound=tk.CENTER,
+            relief='flat'
+        )
 
-    def on_stop(self):
-        self.isStop = True
-        # Change the button image to indicate it's active
-        self.stop_button.config(image=self.stop_button_enabled_image)
-        self.go_button.config(image=self.go_button_disabled_image)
-        self.mic_button.config(image=self.mic_button_enabled_image, state=tk.NORMAL)
+        self.mic_button.image = self.mic_button_enabled_image  # Keep a reference
+        self.mic_button.pack(side=tk.TOP, fill=tk.NONE, pady=2)
+
+    def toggle_auto_move(self):
+        self.autoMove = not self.autoMove
+        if self.autoMove:
+            text = "Auto Move On"
+            bg = "lightgreen"
+        else:
+            text = "Auto Move Off"
+            bg = "lightgray"
+        self.auto_move_button.config(text=text, bg=bg)
+        self.isStop = True if self.autoMove else False
+        self.on_goOrStop()  # Trigger the robot movement when auto is turned on
+
+    def on_goOrStop(self):
+        # Change the state and button image
+        self.isStop = not self.isStop
+        new_image = self.go_button_image if self.isStop else self.stop_button_image
+        self.goOrStop_button.config(image=new_image)
+        self.goOrStop_button.image = new_image  # Update the reference to prevent garbage collection
+
+        # Update microphone button state and image accordingly
+        mic_new_image = self.mic_button_enabled_image if self.isStop else self.mic_button_disabled_image
+        self.mic_button.config(image=mic_new_image, state=('normal' if self.isStop else 'disable'))
+        self.mic_button.image = mic_new_image  # Update the reference
+
+        # Send movement command
+        if self.autoMove:
+            self.SIMControllerInstance.send_movement_command()
+        else:
+            self.mic_button.config(image=self.mic_button_enabled_image, state=tk.NORMAL)
+            self.SIMControllerInstance.send_movement_command()
+            self.isStop = True
+            self.goOrStop_button.config(image=self.go_button_image)
+
+    # In the Display class
+    def on_mic_click(self):
+        voice_input_handler = VoiceInputHandler(self.master, self.mapInstance, self.update_display)
+        voice_input_handler.grab_set()  # Make the voice input window modal
 
     def draw_element(self, position, color, alpha='#'):
         col, row = position
-        x1 = col * self.cell_size
-        y1 = (self.mapInstance.get_map_length()[1] - row - 1) * self.cell_size
+        x1 = col * self.cell_size + self.axis_padding
+        y1 = (self.mapInstance.get_map_length()[1] - row - 1) * self.cell_size + self.axis_padding
         x2 = x1 + self.cell_size
         y2 = y1 + self.cell_size
         if alpha != '#':
@@ -216,14 +252,12 @@ class Display:
 
     def draw_robot(self):
         robotRow, robotCol, robotDirection = self.mapInstance.get_robot_coord()
-        x1, y1 = robotRow, robotCol
-        y1 = self.mapInstance.get_map_length()[1] - y1 - 1
-        x1 *= self.cell_size
-        y1 *= self.cell_size
+        x1 = robotRow * self.cell_size + self.axis_padding
+        y1 = (self.mapInstance.get_map_length()[1] - robotCol - 1) * self.cell_size + self.axis_padding
         self.canvas.create_image(x1, y1, anchor="nw", image=self.robot_images[robotDirection])
 
     def alert(self, message):
-        messagebox.showinfo("📝 Replanning path...", message)
+        messagebox.showinfo(message=message)
 
     def run(self):
         # Center the window before the main loop starts
@@ -232,23 +266,30 @@ class Display:
         self.master.mainloop()
 
     def draw_axes(self):
-        # Draw column numbers (horizontal axis)
+        # Draw column numbers on top and bottom (horizontal axis)
         for i in range(self.cols):
-            self.canvas.create_text(i * self.cell_size + self.cell_size / 2,
+            self.canvas.create_text(i * self.cell_size + self.cell_size / 2 + self.axis_padding,
+                                    self.axis_padding / 2,
+                                    text=str(i), font=("Arial", 12, "bold"))
+            self.canvas.create_text(i * self.cell_size + self.cell_size / 2 + self.axis_padding,
                                     self.canvas_height - self.axis_padding / 2,
                                     text=str(i), font=("Arial", 12, "bold"))
 
-        # Draw row numbers (vertical axis)
+        # Draw row numbers on left and right (vertical axis)
         for i in range(self.rows):
+            self.canvas.create_text(self.axis_padding/2,
+                                    i * self.cell_size + self.cell_size / 2 + self.axis_padding,
+                                    text=str(self.rows - 1 - i), font=("Arial", 12, "bold"))
             self.canvas.create_text(self.canvas_width - self.axis_padding / 2,
-                                    i * self.cell_size + self.cell_size / 2,
-                                    text=str(self.rows - 1 - i), font=("Arial", 12, "bold"))  # Note the reverse order for y-axis
+                                    i * self.cell_size + self.cell_size / 2 + self.axis_padding,
+                                    text=str(self.rows - 1 - i), font=("Arial", 12, "bold"))
+
     def draw_path(self, path):
         if path:
             # Convert path points to canvas coordinates
             pathWithSelfCoord = reversed(path + [self.mapInstance.get_robot_coord()[:2]])
-            canvas_path = [(col * self.cell_size + self.cell_size // 2,
-                            (self.rows - row - 1) * self.cell_size + self.cell_size // 2) for col, row in pathWithSelfCoord]
+            canvas_path = [(col * self.cell_size + self.cell_size // 2 + self.axis_padding,
+                            (self.rows - row - 1) * self.cell_size + self.cell_size // 2 + self.axis_padding) for col, row in pathWithSelfCoord]
 
             # Draw lines between each point in the path
             for i in range(len(canvas_path) - 1):
@@ -258,8 +299,8 @@ class Display:
 
     def draw_image(self, position, image):
         col, row = position
-        x = col * self.cell_size
-        y = (self.rows - row - 1) * self.cell_size  # Adjust for y-axis inversion
+        x = col * self.cell_size + self.axis_padding
+        y = (self.rows - row - 1) * self.cell_size + self.axis_padding # Adjust for y-axis inversion
         self.canvas.create_image(x, y, anchor="nw", image=image)
 
     def center_window(self):
@@ -272,4 +313,3 @@ class Display:
 
         # Set the position of the window to the center of the screen
         self.master.geometry("+{}+{}".format(position_right, position_down))
-
