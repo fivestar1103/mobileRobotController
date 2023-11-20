@@ -119,13 +119,9 @@ class VoiceInputHandler(tk.Toplevel):
         record_button.config(text=original_text, state='normal')
 
     def speech_to_text(self, audio_file_path):
-        # Placeholder implementation, randomly returns values for demonstration
-        if 'type' in audio_file_path:
-            return random.randint(0, 1)  # Randomly returns 0 or 1 for type
-        elif 'column' in audio_file_path:
-            return random.randint(0, self.cols - 1)  # Randomly returns a column within map bounds
-        elif 'row' in audio_file_path:
-            return random.randint(0, self.rows - 1)  # Randomly returns a row within map bounds
+        # audio_file_path에 존재하는 음성을 읽어서 stt 적용하여 파싱된 정수 세개 반환
+        
+        
 
     def simulate_recording(self, field):
         self.latest_input[field] = 0  # Placeholder value for demonstration
