@@ -121,6 +121,7 @@ class VoiceInputHandler:
             audio_data = recognizer.record(source)
         try:
             str_value = recognizer.recognize_google(audio_data, language="ko-KR")
+            print(str_value)
             number_mapping = {
                 '공': 0, '영': 0, '0': 0,
                 '하나': 1, '일': 1, '1': 1,
@@ -135,7 +136,8 @@ class VoiceInputHandler:
             }
             # Split the string into words for easier matching
             words = str_value.split()
-            result = [1 if '위' in words else 0]  # Default to 0 unless '위험' (danger) is detected
+            result = [1 if '위' in words[0] else 0]  # Default to 0 unless '위험' (danger) is detected
+
             # Map the spoken words to their corresponding number
             for word in words[1:]:  # Assume the first word is type, so start from the second word
                 number = number_mapping.get(word, None)
