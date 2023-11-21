@@ -13,6 +13,7 @@ from Path_Planning_and_Map_Management.Map import Map
 
 class VoiceInputHandler:
     def __init__(self, parent, mapObject: Map, callback=None):
+        self.add_button = None
         self.window = tk.Toplevel(parent)
         self.window.title("Record Voice")
 
@@ -55,6 +56,7 @@ class VoiceInputHandler:
 
         add_button = tk.Button(latest_input_frame, text="Add", command=self.add_latest_input)
         add_button.pack(side=tk.LEFT)
+        self.add_button = add_button
 
         # Listbox and Scrollbar for recorded points
         listbox_frame = tk.Frame(self.window, bg=self.color2)
@@ -101,56 +103,55 @@ class VoiceInputHandler:
         self.latest_input = processed_input
 
         # Update the label and reset the button text
-        type_text = "ColorBlob" if self.latest_input[0] == 0 else "Hazard"
-        col, row = self.latest_input[1:]
-        self.latest_input_label.config(text=f"{type_text} at ({col}, {row})")
+        if self.latest_input == (-1, -1, -1):
+            self.latest_input_label.config(text="Error occurred! Try again")
+            self.add_button.config(state="disabled")
+        else:
+            type_text = "ColorBlob" if self.latest_input[0] == 0 else "Hazard"
+            col, row = self.latest_input[1:]
+            self.latest_input_label.config(text=f"{type_text} at ({col}, {row})")
+            self.add_button.config(state="normal")
+
         record_button.config(text="Record new point", state='normal')
 
     # AI를 통한 STT 구현
     def speech_to_text(self, audio_file_path):
-        # Placeholder implementation, randomly returns values for demonstration
-        # return [random.randint(0, 1), random.randint(0, self.cols - 1), random.randint(0, self.rows - 1)]
         recognizer = sr.Recognizer()
-        str_value = None
         with sr.AudioFile(audio_file_path) as source:
             audio_data = recognizer.record(source)
         try:
             str_value = recognizer.recognize_google(audio_data, language="ko-KR")
-            l = [0]
-            for i in range(len(str_value)):
-                if str_value[i] =='위':
-                    l[0] = 1    
-                #공(영) 하나 둘 셋(삼) 넷 다섯 여섯 일곱 여덟 아홉
-                elif str_value[i] == '영' or str_value[i] == '공' or str_value[i] == '0':
-                    l.append(0)
-                elif str_value[i] == '하' or str_value[i] == '한' or str_value[i] == '1':
-                    l.append(1)
-                elif str_value[i] == '둘' or str_value[i] == '2':
-                    l.append(2)
-                elif str_value[i] == '셋' or str_value[i] == '삼' or str_value[i] == '3':
-                    l.append(3)
-                elif str_value[i] == '넷' or str_value[i] == '4':
-                    l.append(4)
-                elif str_value[i] == '다' or str_value[i] == '5':
-                    l.append(5)
-                elif (str_value[i] == '여' and str_value[i+1] == '섯') or str_value[i] == '6':
-                    l.append(6)
-                elif str_value[i] == '일' or str_value[i] == '7':
-                    l.append(7)
-                elif (str_value[i] == '여' and str_value[i+1] == '덟') or str_value[i] == '8':
-                    l.append(8)
-                elif str_value[i] == '아' or str_value[i] == '9':
-                    l.append(9)
-        except KeyError as e:
-            print(f"KeyError: {e}")
-        except sr.UnknownValueError:
-            print("음성을 인식하지 못했습니다.")
-        except sr.RequestError as e:
-            print(f"Google Web Speech API 요청 에러: {e}")
-        if len(l) != 3:
-            l = [0,0,0]
-        ret = tuple(l)
-        return ret
+            number_mapping = {
+                '공': 0, '영': 0, '0': 0,
+                '하나': 1, '일': 1, '1': 1,
+                '둘': 2, '이': 2, '2': 2,
+                '셋': 3, '삼': 3, '3': 3,
+                '넷': 4, '사': 4, '4': 4,
+                '다섯': 5, '오': 5, '5': 5,
+                '여섯': 6, '육': 6, '6': 6,
+                '일곱': 7, '칠': 7, '7': 7,
+                '여덟': 8, '팔': 8, '8': 8,
+                '아홉': 9, '구': 9, '9': 9
+            }
+            # Split the string into words for easier matching
+            words = str_value.split()
+            result = [1 if '위' in words else 0]  # Default to 0 unless '위험' (danger) is detected
+            # Map the spoken words to their corresponding number
+            for word in words[1:]:  # Assume the first word is type, so start from the second word
+                number = number_mapping.get(word, None)
+                if number is not None:
+                    result.append(number)
+                if len(result) == 3:
+                    break  # Stop if we already have three items
+
+            if len(result) != 3:
+                raise ValueError("Could not parse all needed numbers from speech")
+            return tuple(result)
+
+        except (KeyError, ValueError, sr.UnknownValueError, sr.RequestError) as e:
+            print(f"An error occurred while processing the speech: {e}")
+            ret = (-1, -1, -1)  # Return a default tuple on error
+            return ret
 
     def add_latest_input(self):
         if not self.is_valid_input():

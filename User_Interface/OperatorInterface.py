@@ -9,6 +9,9 @@ from Path_Planning_and_Map_Management.Map import Map
 
 class OperatorInterface:
     def __init__(self, mapInstance: Map, master=None):
+        self.hazards_display = None
+        self.color_blobs_display = None
+        self.spots_display = None
         self.mapInstance = mapInstance
         self.master = master if master else tk.Tk()
         self.master.title("Map Initialization")
@@ -127,7 +130,7 @@ class OperatorInterface:
             col, row = int(col), int(row)
             position = (col, row)
             if 0 <= col < self.cols and 0 <= row < self.rows:
-                if position in self.spots or position in self.hazards or position in self.color_blobs:
+                if position in self.spots or position in self.hazards or position in self.color_blobs or position == (self.robotCol, self.robotRow):
                     messagebox.showerror("Invalid Input", "❌ Position already occupied.")
                     return False
                 return True
