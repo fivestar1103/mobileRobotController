@@ -116,19 +116,18 @@ class VoiceInputHandler:
             audio_data = recognizer.record(source)
         try:
             str_value = recognizer.recognize_google(audio_data, language="ko-KR")
-            print(str_value)
             l = [0]
             for i in range(len(str_value)):
                 if str_value[i] =='위':
                     l[0] = 1    
-                #영(공) 하나 둘 삼(셋) 넷 다섯 여섯 일곱 여덟 아홉
+                #공(영) 하나 둘 셋(삼) 넷 다섯 여섯 일곱 여덟 아홉
                 elif str_value[i] == '영' or str_value[i] == '공' or str_value[i] == '0':
                     l.append(0)
                 elif str_value[i] == '하' or str_value[i] == '한' or str_value[i] == '1':
                     l.append(1)
                 elif str_value[i] == '둘' or str_value[i] == '2':
                     l.append(2)
-                elif str_value[i] == '삼' or str_value[i] == '셋' or str_value[i] == '3':
+                elif str_value[i] == '셋' or str_value[i] == '삼' or str_value[i] == '3':
                     l.append(3)
                 elif str_value[i] == '넷' or str_value[i] == '4':
                     l.append(4)
@@ -148,6 +147,8 @@ class VoiceInputHandler:
             print("음성을 인식하지 못했습니다.")
         except sr.RequestError as e:
             print(f"Google Web Speech API 요청 에러: {e}")
+        if len(l) != 3:
+            l = [0,0,0]
         ret = tuple(l)
         return ret
 
