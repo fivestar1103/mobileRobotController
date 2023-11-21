@@ -1,7 +1,6 @@
 from Path_Planning_and_Map_Management.Map import Map
 from Path_Planning_and_Map_Management.PathPlanner import PathPlanner
 from Robot_Control_and_Monitoring.RobotController import RobotController
-from User_Interface.VoiceInputHandler import VoiceInputHandler
 
 
 # 이 클래스는 SIM을 제어하여 다음 기능을 수행한다 즉, add-on을 구현한 클래스이다

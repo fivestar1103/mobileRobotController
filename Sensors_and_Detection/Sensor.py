@@ -1,7 +1,8 @@
-from typing import List, Tuple
+from abc import ABC, abstractmethod
+from typing import Tuple, List
 
 
-class Sensor:
+class Sensor(ABC):
     def __init__(self):
         self.__sensorType = None
         self.__sensorData = None
@@ -20,5 +21,10 @@ class Sensor:
     def set_sensor_data(self, value: List[Tuple]):
         self.__sensorData = value
 
+    @abstractmethod
     def read_sensor(self, position: Tuple):
-        raise NotImplementedError("Sensors must implement readSensor()")
+        """
+        Derived sensor classes should implement this method to read sensor data
+        based on the given position.
+        """
+        pass

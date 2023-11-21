@@ -81,7 +81,7 @@ class Display:
                                 yscrollcommand=self.log_scroll.set,
                                 state='disabled',
                                 bg='lightgray',
-                                width=37,
+                                width=38,
                                 highlightbackground="black",
                                 )
         self.log_scroll.config(command=self.log_text.yview)
@@ -136,12 +136,16 @@ class Display:
 
         # Enable the text widget, insert the message, then disable it
         self.log_text.config(state='normal')
-        # Insert a new frame for each log entry to control the background color at the beginning of the text widget
+        if self.log_counter > 1:
+            # Add space before the log entry if it is not the first entry
+            self.log_text.insert('1.0', '\n')
+        # Create a new frame for each log entry to control the background color
         log_frame = tk.Frame(self.log_text, bg=color, highlightthickness=0)  # Remove any highlight border
-        log_label = tk.Label(log_frame, text=message, bg=color, fg="white", anchor='w', justify=tk.LEFT, width=28)
+        log_label = tk.Label(log_frame, text=f"#{self.log_counter}: {message}", bg=color, fg="white", anchor='w',
+                             justify=tk.LEFT, width=29)
         log_label.pack(side=tk.TOP, fill=tk.X)  # Pack with fill=X to fill frame horizontally
         self.log_text.window_create('1.0', window=log_frame)  # Insert at the beginning
-        self.log_text.insert('1.0', '\n')  # Add space after the log entry
+        self.log_text.yview('1.0')  # Auto-scroll to the top of the log
         self.log_text.config(state='disabled')
 
     def create_buttons(self):
@@ -210,8 +214,7 @@ class Display:
 
     # In the Display class
     def on_mic_click(self):
-        voice_input_handler = VoiceInputHandler(self.master, self.mapInstance, self.update_display)
-        voice_input_handler.grab_set()  # Make the voice input window modal
+        VoiceInputHandler(self.master, self.mapInstance, self.update_display)
 
     def draw_element(self, position, color, alpha='#'):
         col, row = position

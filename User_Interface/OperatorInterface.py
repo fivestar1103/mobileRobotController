@@ -9,6 +9,9 @@ from Path_Planning_and_Map_Management.Map import Map
 
 class OperatorInterface:
     def __init__(self, mapInstance: Map, master=None):
+        self.hazards_display = None
+        self.color_blobs_display = None
+        self.spots_display = None
         self.mapInstance = mapInstance
         self.master = master if master else tk.Tk()
         self.master.title("Map Initialization")
@@ -62,17 +65,17 @@ class OperatorInterface:
         input_frame.pack(pady=2)
 
         col_label = tk.Label(input_frame, text="Column:", bg=self.color2)
-        col_label.pack(side=tk.LEFT, padx=2)
+        col_label.pack(side=tk.LEFT, padx=1)
         col_entry = tk.Entry(input_frame, width=2)
-        col_entry.pack(side=tk.LEFT, padx=2)
+        col_entry.pack(side=tk.LEFT, padx=1)
 
         row_label = tk.Label(input_frame, text="Row:", bg=self.color2)
-        row_label.pack(side=tk.LEFT, padx=2)
+        row_label.pack(side=tk.LEFT, padx=1)
         row_entry = tk.Entry(input_frame, width=2)
-        row_entry.pack(side=tk.LEFT, padx=2)
+        row_entry.pack(side=tk.LEFT, padx=1)
 
         button = tk.Button(frame, text="OK", command=lambda: command(col_entry.get(), row_entry.get(), frame), bg=self.color2)
-        button.pack(pady=5)
+        button.pack(pady=3)
 
         if display:
             list_frame = tk.Frame(frame, bg=self.color2)
@@ -127,7 +130,7 @@ class OperatorInterface:
             col, row = int(col), int(row)
             position = (col, row)
             if 0 <= col < self.cols and 0 <= row < self.rows:
-                if position in self.spots or position in self.hazards or position in self.color_blobs:
+                if position in self.spots or position in self.hazards or position in self.color_blobs or position == (self.robotCol, self.robotRow):
                     messagebox.showerror("Invalid Input", "❌ Position already occupied.")
                     return False
                 return True
@@ -192,4 +195,3 @@ class OperatorInterface:
     def run(self):
         self.center_window()
         self.master.mainloop()
-

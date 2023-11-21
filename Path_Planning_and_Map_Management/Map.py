@@ -107,7 +107,18 @@ class Map:
                 if point.get_position() == hazard.get_position():
                     hazard.set_revealed()
 
-    # 전체 맵 반환 - 꼭 필요한 것인지 모르겠음. 일단 디버깅 위해 추가
+    # 현재 맵에 존재하는 모든 물체들의 위치를 반환
+    def get_existing_positions(self):
+        existing_positions = [self.get_robot_coord()[:2]]
+        for hazard in self.get_hazards():
+            existing_positions.append(hazard.get_position())
+        for colorBlob in self.get_color_blobs():
+            existing_positions.append(colorBlob.get_position())
+        for spot in self.get_spots():
+            existing_positions.append(spot.get_position())
+        return existing_positions
+
+    # 전체 맵 반환 - 디버깅 목적. 실제로는 필요 없음
     def print_full_map(self, whichMap=''):
         # 맵의 크기에 맞는 2차원 배열 생성
         cols, rows = self.get_map_length()
