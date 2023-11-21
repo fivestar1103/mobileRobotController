@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+import speech_recognition as sr
 import sounddevice as sd
 import wavio
 import os
@@ -10,168 +11,169 @@ from Data_Structures.Hazard import Hazard
 from Path_Planning_and_Map_Management.Map import Map
 
 
-class VoiceInputHandler(tk.Toplevel):
+class VoiceInputHandler:
     def __init__(self, parent, mapObject: Map, callback=None):
-        super().__init__(parent)
-        self.mapObject = mapObject
-        self.robot_position = mapObject.get_robot_coord()
-        self.cols, self.rows = mapObject.get_map_length()
-        self.existingHazards = mapObject.get_hazards()
-        self.existingColorBlobs = mapObject.get_color_blobs()
-        self.existingSpots = mapObject.get_spots()
-        self.existingPoints = [hazard.get_position() for hazard in self.existingHazards] + [colorBlob.get_position() for colorBlob in self.existingColorBlobs] + [spot.get_position() for spot in self.existingSpots]
-        self.callback = callback
-
-        self.close_button = None
-        self.points_listbox = None
-        self.add_button = None
-        self.latest_input_label = None
-        self.title("Voice Input")
+        self.window = tk.Toplevel(parent)
+        self.window.title("Record Voice")
 
         self.color1 = "#79D6F7"
         self.color2 = "#F7F079"
+        self.window.config(bg=self.color2)
 
-        self.type_button = None
-        self.column_button = None
-        self.row_button = None
+        self.points_listbox = None
+        self.latest_input_label = None
+        self.record_button = None
+        self.mapObject = mapObject
+        self.robot_position = mapObject.get_robot_coord()
+        self.cols, self.rows = mapObject.get_map_length()
+        self.callback = callback
 
-        self.latest_input = {'type': '', 'column': '', 'row': ''}
+        self.latest_input = [-1, -1, -1]
         self.recorded_points = []
-
-        self.config(bg=self.color2)
 
         self.setup_ui()
         self.center_window()
 
     def setup_ui(self):
-        # Frames for Type, Column, Row inputs
-        self.create_input_frame("Type (0 for ColorBlob, 1 for Hazard)", "type")
-        self.create_input_frame("Column Number", "column")
-        self.create_input_frame("Row Number", "row")
+        record_frame = tk.Frame(self.window, bg=self.color2)
+        record_frame.pack(padx=10, pady=5)
 
-        # Latest input display with 'Add' button
-        latest_input_frame = tk.Frame(self, bg=self.color2)
+        record_label = tk.Label(record_frame, text="Record the type, row, and column number in Korean", bg=self.color2)
+        record_label.pack()
+
+        record_button = tk.Button(record_frame, text="Record new point", command=self.record_audio)
+        record_button.pack()
+        self.record_button = record_button
+
+        # display the input with 'Add' button
+        latest_input_frame = tk.Frame(self.window, bg=self.color2)
         latest_input_frame.pack(padx=10, pady=5)
 
-        self.latest_input_label = tk.Label(latest_input_frame, text="Type at (Column, Row)", bg=self.color2)
-        self.latest_input_label.pack(side=tk.LEFT)
+        latest_input_label = tk.Label(latest_input_frame, text="Type at (Column, Row)", bg=self.color2)
+        latest_input_label.pack(side=tk.LEFT)
+        self.latest_input_label = latest_input_label
 
-        self.add_button = tk.Button(latest_input_frame, text="Add", command=self.add_latest_input)
-        self.add_button.pack(side=tk.LEFT)
+        add_button = tk.Button(latest_input_frame, text="Add", command=self.add_latest_input)
+        add_button.pack(side=tk.LEFT)
 
         # Listbox and Scrollbar for recorded points
-        listbox_frame = tk.Frame(self, bg=self.color2)
+        listbox_frame = tk.Frame(self.window, bg=self.color2)
         listbox_frame.pack(padx=10, pady=10)
 
-        self.points_listbox = tk.Listbox(listbox_frame, height=6, width=16, bg='lightgray')
-        self.points_listbox.pack(side=tk.LEFT)
-        self.points_listbox.bind('<Double-1>', self.delete_selected_point)
+        points_listbox = tk.Listbox(listbox_frame, height=6, width=16, bg='lightgray')
+        points_listbox.pack(side=tk.LEFT)
+        points_listbox.bind('<Double-1>', self.delete_selected_point)
 
-        scrollbar = tk.Scrollbar(listbox_frame, command=self.points_listbox.yview)
+        scrollbar = tk.Scrollbar(listbox_frame, command=points_listbox.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.points_listbox.config(yscrollcommand=scrollbar.set)
+        points_listbox.config(yscrollcommand=scrollbar.set)
+        self.points_listbox = points_listbox
 
         # Label for instruction below the listbox
-        delete_message = tk.Label(self, text="Double click each item to delete", bg=self.color2)
+        delete_message = tk.Label(self.window, text="Double click each item to delete", bg=self.color2)
         delete_message.pack(pady=(0, 10))
 
         # Button to close the window
-        self.close_button = tk.Button(self, text="Back to Map", command=self.close_window, bg=self.color2)
-        self.close_button.pack(pady=5)
+        close_button = tk.Button(self.window, text="Back to Map", command=self.close_window, bg=self.color2)
+        close_button.pack(pady=5)
 
-    def create_input_frame(self, label_text, field_name):
-        frame = tk.Frame(self, bg=self.color2)
-        frame.pack(padx=10, pady=5)
-
-        label = tk.Label(frame, text=label_text, bg=self.color2)
-        label.pack()
-
-        button = tk.Button(frame, text=f"Record {field_name.capitalize()}", command=lambda: self.record_audio(field_name))
-        setattr(self, f"{field_name}_button", button)
-        button.pack()
-
-    def record_audio(self, field):
+    def record_audio(self):
         fs = 44100  # Sample rate
-        seconds = 2  # Duration of recording
+        seconds = 5  # Duration of recording
 
         # Change the button text to "Recording..."
-        record_button = getattr(self, f"{field}_button")
-        original_text = record_button.cget("text")
+        record_button = self.record_button
         record_button.config(text="Recording...", state='disabled')
 
         # Force GUI update before starting the recording
-        self.update()
+        self.window.update()
 
         # Start recording
         recording = sd.rec(int(seconds * fs), samplerate=fs, channels=1)
         sd.wait()  # Wait until recording is finished
 
         # Save the recording as a WAV file
-        file_path = os.path.join('audios', f'{field}_input.wav')
+        file_path = os.path.join('audios', 'input.wav')
         wavio.write(file_path, recording, fs, sampwidth=2)
 
         # Use the speech_to_text method to process the recorded audio
         processed_input = self.speech_to_text(file_path)
-        self.latest_input[field] = processed_input
+        self.latest_input = processed_input
 
         # Update the label and reset the button text
-        self.update_latest_input_label()
-        record_button.config(text=original_text, state='normal')
+        type_text = "ColorBlob" if self.latest_input[0] == 0 else "Hazard"
+        col, row = self.latest_input[1:]
+        self.latest_input_label.config(text=f"{type_text} at ({col}, {row})")
+        record_button.config(text="Record new point", state='normal')
 
+    # AI를 통한 STT 구현
     def speech_to_text(self, audio_file_path):
-        # audio_file_path에 존재하는 음성을 읽어서 stt 적용하여 파싱된 정수 세개 반환
-        
-        
-
-    def simulate_recording(self, field):
-        self.latest_input[field] = 0  # Placeholder value for demonstration
-        self.update_latest_input_label()
-        getattr(self, f"{field}_button").config(text=f"Record {field.capitalize()}", state='normal')
-
-    def update_latest_input_label(self):
-        type_text = "ColorBlob" if self.latest_input['type'] == 0 else "Hazard"
-        self.latest_input_label.config(
-            text=f"{type_text} at ({self.latest_input['column']}, {self.latest_input['row']})"
-        )
+        # Placeholder implementation, randomly returns values for demonstration
+        # return [random.randint(0, 1), random.randint(0, self.cols - 1), random.randint(0, self.rows - 1)]
+        recognizer = sr.Recognizer()
+        str_value = None
+        with sr.AudioFile(audio_file_path) as source:
+            audio_data = recognizer.record(source)
+        try:
+            str_value = recognizer.recognize_google(audio_data, language="ko-KR")
+            print(str_value)
+            l = [0]
+            for i in range(len(str_value)):
+                if str_value[i] =='위':
+                    l[0] = 1    
+                #영(공) 하나 둘 삼(셋) 넷 다섯 여섯 일곱 여덟 아홉
+                elif str_value[i] == '영' or str_value[i] == '공' or str_value[i] == '0':
+                    l.append(0)
+                elif str_value[i] == '하' or str_value[i] == '한' or str_value[i] == '1':
+                    l.append(1)
+                elif str_value[i] == '둘' or str_value[i] == '2':
+                    l.append(2)
+                elif str_value[i] == '삼' or str_value[i] == '셋' or str_value[i] == '3':
+                    l.append(3)
+                elif str_value[i] == '넷' or str_value[i] == '4':
+                    l.append(4)
+                elif str_value[i] == '다' or str_value[i] == '5':
+                    l.append(5)
+                elif (str_value[i] == '여' and str_value[i+1] == '섯') or str_value[i] == '6':
+                    l.append(6)
+                elif str_value[i] == '일' or str_value[i] == '7':
+                    l.append(7)
+                elif (str_value[i] == '여' and str_value[i+1] == '덟') or str_value[i] == '8':
+                    l.append(8)
+                elif str_value[i] == '아' or str_value[i] == '9':
+                    l.append(9)
+        except KeyError as e:
+            print(f"KeyError: {e}")
+        except sr.UnknownValueError:
+            print("음성을 인식하지 못했습니다.")
+        except sr.RequestError as e:
+            print(f"Google Web Speech API 요청 에러: {e}")
+        ret = tuple(l)
+        return ret
 
     def add_latest_input(self):
-        if self.is_valid_input():
-            self.recorded_points.append((self.latest_input['type'], self.latest_input['column'], self.latest_input['row']))
-            self.update_points_listbox()
-            self.latest_input_label.config(text="Type at (Column, Row)")
-            self.latest_input = {'type': 'Type', 'column': '', 'row': ''}
-
-    def is_valid_input(self):
-        # Check if any field is empty
-        if '' in self.latest_input.values():
-            messagebox.showerror("Invalid Input", "Please record all fields.")
-            return False
-
-        # Convert column and row to integers and handle invalid inputs
-        try:
-            col, row = int(self.latest_input['column']), int(self.latest_input['row'])
-        except ValueError:
-            messagebox.showerror("Invalid Input", "Column and row must be integers.")
-            return False
-
-        # Check if the point is the robot's position, a duplicate, or out of bounds
-        if (col, row) == self.robot_position:
-            messagebox.showerror("Invalid Input", "Point is the robot's current position.")
-            return False
-        if (col, row) in self.existingPoints or (col, row) in [(int(p[1]), int(p[2])) for p in self.recorded_points]:
-            messagebox.showerror("Invalid Input", "Duplicate point.")
-            return False
-        if not (0 <= col < self.cols and 0 <= row < self.rows):
-            messagebox.showerror("Invalid Input", "Point is out of map bounds.")
-            return False
-
-        return True
-
-    def update_points_listbox(self):
+        if not self.is_valid_input():
+            return
+        self.recorded_points.append(self.latest_input)
         self.points_listbox.delete(0, tk.END)
         for index, point in enumerate(self.recorded_points, start=1):
             entry = f"#{index}: {'ColorBlob' if point[0] == 0 else 'Hazard'} at ({point[1]}, {point[2]})"
             self.points_listbox.insert(tk.END, entry)
+        self.latest_input_label.config(text="Type at (Column, Row)")
+        self.latest_input = [-1, -1, -1]
+
+    # Check if the point is the robot's position, a duplicate, or out of bounds
+    def is_valid_input(self):
+        col, row = self.latest_input[1:]
+        for existingCol, existingRow in self.mapObject.get_existing_positions():
+            if col == existingCol and row == existingRow:
+                messagebox.showerror("Invalid Input", "❌ Point already occupied!")
+                return False
+        if not (0 <= col < self.cols and 0 <= row < self.rows):
+            messagebox.showerror("Invalid Input", "❌ Point is out of map bounds.")
+            return False
+
+        return True
 
     def delete_selected_point(self, event):
         try:
@@ -193,13 +195,12 @@ class VoiceInputHandler(tk.Toplevel):
         if self.callback:
             self.callback()
 
-        self.destroy()
+        self.window.destroy()
 
     def center_window(self):
-        self.update_idletasks()
-        width = self.winfo_width()
-        height = self.winfo_height()
-        x = (self.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.winfo_screenheight() // 2) - (height // 2)
-        self.geometry('{}x{}+{}+{}'.format(width, height, x, y))
-
+        self.window.update_idletasks()
+        width = self.window.winfo_width()
+        height = self.window.winfo_height()
+        x = (self.window.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.window.winfo_screenheight() // 2) - (height // 2)
+        self.window.geometry('{}x{}+{}+{}'.format(width, height, x, y))
