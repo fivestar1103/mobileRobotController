@@ -1,9 +1,9 @@
-from Data_Structures.ColorBlob import ColorBlob
-from Data_Structures.Hazard import Hazard
-from Data_Structures.Spot import Spot
-from Robot_Control_and_Monitoring.SIMController import SIMController
-from User_Interface.Display import Display
-from User_Interface.OperatorInterface import OperatorInterface
+from Backend.Data_Structures.ColorBlob import ColorBlob
+from Backend.Data_Structures.Hazard import Hazard
+from Backend.Data_Structures.Spot import Spot
+from Backend.Controllers.SIMController import SIMController
+from Frontend.Map_Visualization_and_Initialization.Display import Display
+from Frontend.Map_Visualization_and_Initialization.OperatorInterface import OperatorInterface
 
 if __name__ == "__main__":
     # add-on 객체 생성
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # 지도 정보 초기화
     print("Initialize map: ")
     # ------------- debug ---------------
-    debug = True
+    debug = False
     if debug:
         cols, rows = 9, 8
         robotCoord = (5, 1, 0)  # (5, 1)에 위치하고 북쪽을 바라보도록 초기화

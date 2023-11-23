@@ -1,6 +1,6 @@
 import heapq
 from typing import List
-from Path_Planning_and_Map_Management.Map import Map
+from Backend.Map_Management_and_Path_Planning.Map import Map
 
 
 class PathPlanner:

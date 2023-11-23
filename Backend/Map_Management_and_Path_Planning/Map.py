@@ -1,7 +1,7 @@
 from typing import List, Tuple
-from Data_Structures.ColorBlob import ColorBlob
-from Data_Structures.Hazard import Hazard
-from Data_Structures.Spot import Spot
+from Backend.Data_Structures.ColorBlob import ColorBlob
+from Backend.Data_Structures.Hazard import Hazard
+from Backend.Data_Structures.Spot import Spot
 
 
 class Map:

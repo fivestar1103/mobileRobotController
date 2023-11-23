@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import ImageTk, Image
 
-from User_Interface.VoiceInputHandler import VoiceInputHandler
+from Frontend.Voice_Handling.VoiceInputHandler import VoiceInputHandler
 
 
 class Display:

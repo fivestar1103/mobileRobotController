@@ -4,11 +4,10 @@ import speech_recognition as sr
 import sounddevice as sd
 import wavio
 import os
-import random
 
-from Data_Structures.ColorBlob import ColorBlob
-from Data_Structures.Hazard import Hazard
-from Path_Planning_and_Map_Management.Map import Map
+from Backend.Data_Structures.ColorBlob import ColorBlob
+from Backend.Data_Structures.Hazard import Hazard
+from Backend.Map_Management_and_Path_Planning.Map import Map
 
 
 class VoiceInputHandler:

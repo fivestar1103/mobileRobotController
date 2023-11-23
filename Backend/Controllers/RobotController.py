@@ -9,11 +9,11 @@
 import random
 from typing import List
 
-from Data_Structures.ColorBlob import ColorBlob
-from Data_Structures.Hazard import Hazard
-from Sensors_and_Detection.ColorBlobSensor import ColorBlobSensor
-from Sensors_and_Detection.HazardSensor import HazardSensor
-from Sensors_and_Detection.PositionSensor import PositionSensor
+from Backend.Data_Structures.ColorBlob import ColorBlob
+from Backend.Data_Structures.Hazard import Hazard
+from Backend.Sensors.ColorBlobSensor import ColorBlobSensor
+from Backend.Sensors.HazardSensor import HazardSensor
+from Backend.Sensors.PositionSensor import PositionSensor
 
 
 class RobotController:

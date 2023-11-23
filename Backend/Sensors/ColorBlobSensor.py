@@ -1,4 +1,4 @@
-from Sensors_and_Detection.Sensor import Sensor
+from Backend.Sensors.Sensor import Sensor
 
 
 class ColorBlobSensor(Sensor):

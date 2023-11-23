@@ -1,4 +1,4 @@
-from Data_Structures.Position import Position
+from Backend.Data_Structures.Position import Position
 
 
 class Hazard(Position):

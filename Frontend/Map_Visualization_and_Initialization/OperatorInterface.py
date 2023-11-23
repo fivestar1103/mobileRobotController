@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
 
-from Data_Structures.ColorBlob import ColorBlob
-from Data_Structures.Hazard import Hazard
-from Data_Structures.Spot import Spot
-from Path_Planning_and_Map_Management.Map import Map
+from Backend.Data_Structures.ColorBlob import ColorBlob
+from Backend.Data_Structures.Hazard import Hazard
+from Backend.Data_Structures.Spot import Spot
+from Backend.Map_Management_and_Path_Planning.Map import Map
 
 
 class OperatorInterface:
