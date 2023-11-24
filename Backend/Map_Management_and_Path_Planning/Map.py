@@ -1,3 +1,5 @@
+# 이 클래스는 지도 객체를 구현한 것으로, 지도와 관련된 모든 정보와 동작을 다룬다.
+
 from typing import List, Tuple
 from Backend.Data_Structures.ColorBlob import ColorBlob
 from Backend.Data_Structures.Hazard import Hazard
@@ -6,32 +8,33 @@ from Backend.Data_Structures.Spot import Spot
 
 class Map:
     def __init__(self):
-        self.__mapLength: Tuple[int, int] = (0, 0)
+        self.__mapLength: Tuple[int, int] = (0, 0)  # colLength, rowLength
         self.__robotCoord: Tuple[int, int, int] = (0, 0, 0)  # col, row, direction(북동남서 순으로 0~4)
         self.__spots: List[Spot] = []
         self.__hazards: List[Hazard] = []
         self.__colorBlobs: List[ColorBlob] = []
 
-    #지도의 행과 열의 길이를 반환
+    # 지도의 행과 열의 길이를 반환
     def get_map_length(self):
         return self.__mapLength
 
-    #지도의 행과 열의 길이를 설정
+    # 지도의 행과 열의 길이를 설정
     def set_map_length(self, cols, rows):
         self.__mapLength = (cols, rows)
 
-    #로봇의 위치 반환
+    # 로봇의 위치 반환
     def get_robot_coord(self):
         return self.__robotCoord
 
+    # 로봇의 위치 설정
     def set_robot_coord(self, position: (int, int, int)):
         self.__robotCoord = position
 
-    #모든 탐색 지점을 반환
+    # 모든 탐색 지점을 반환
     def get_spots(self):
         return self.__spots
 
-    #탐색 지점들을 설정
+    # 탐색 지점들을 설정
     def set_spots(self, spots: List[Spot]):
         self.__spots = spots
 
@@ -98,11 +101,11 @@ class Map:
 
     # 숨겨진 지점을 공개된 지점으로 변경
     def reveal_hidden(self, point):
-        if type(point) == ColorBlob:
+        if isinstance(point, ColorBlob):
             for colorBlob in self.__colorBlobs:
                 if point.get_position() == colorBlob.get_position():
                     colorBlob.set_revealed()
-        elif type(point) == Hazard:
+        elif isinstance(point, Hazard):
             for hazard in self.__hazards:
                 if point.get_position() == hazard.get_position():
                     hazard.set_revealed()

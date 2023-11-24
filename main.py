@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # 지도 정보 초기화
     print("Initialize map: ")
     # ------------- debug ---------------
-    debug = False
+    debug = True
     if debug:
         cols, rows = 9, 8
         robotCoord = (5, 1, 0)  # (5, 1)에 위치하고 북쪽을 바라보도록 초기화
@@ -39,22 +39,22 @@ if __name__ == "__main__":
             Hazard(7, 5, True),
         ]
 
-        mapInstance = addOn.mapInstance
+        mapInstance = addOn.__mapInstance
         mapInstance.set_map_length(cols, rows)
         mapInstance.set_robot_coord(robotCoord)
         mapInstance.set_spots(spots)
         mapInstance.set_hazards(hazards)
         mapInstance.set_color_blobs(colorBlobs)
-        addOn.robotController.set_current_position(robotCoord)
+        addOn.__robotController.set_current_position(robotCoord)
     # --------------------------------------------------------
     else:
-        operatorInterface = OperatorInterface(addOn.mapInstance)
+        operatorInterface = OperatorInterface(addOn.__mapInstance)
         operatorInterface.run()
 
     # 경로 계산
-    mapInstance = addOn.mapInstance
+    mapInstance = addOn.__mapInstance
     robotCoord = mapInstance.get_robot_coord()
-    addOn.robotController.set_current_position(robotCoord)
+    addOn.__robotController.set_current_position(robotCoord)
     addOn.set_path()
 
     # 초기 맵 상태 출력
@@ -62,8 +62,8 @@ if __name__ == "__main__":
     mapInstance.print_full_map("Initial")
 
     # GUI로 표시
-    addOn.display = Display(addOn)
-    addOn.display.run()
+    addOn.__display = Display(addOn)
+    addOn.__display.run()
 
     # 최종 맵 상태 출력
     print("\n⭐ All Spots Have Been Explored!\n")

@@ -1,3 +1,6 @@
+# 이 클래스는 로봇의 위험 위치 센서를 구현한 것이다.
+# 현재 로봇의 위치를 구한다.
+
 from Backend.Sensors.Sensor import Sensor
 
 

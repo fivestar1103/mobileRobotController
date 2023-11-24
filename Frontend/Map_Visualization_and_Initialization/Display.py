@@ -37,7 +37,7 @@ class Display:
         self.color4 = "#3C6575"
 
         self.SIMControllerInstance = SIMControllerInstance
-        self.mapInstance = self.SIMControllerInstance.mapInstance
+        self.mapInstance = self.SIMControllerInstance.__mapInstance
         self.master = master if master else tk.Tk()
         self.master.config(bg=self.color1)
         self.master.title("Mobile Robot Controller")

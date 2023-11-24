@@ -1,12 +1,26 @@
+# 이 클래스는 현재 지도의 상황을 토대로 최단경로를 찾는다.
+# 최단 경로 알고리즘은 A* 알고리즘을 사용하며,
+# 휴리스틱 방법으로 맨해튼 거리를 사용한다.
+# 이 클래스를 통해 얻어진 경로는 로봇이 이동해야 하는 지점들의 스택이다.
+# 즉, __currentPath의 가장 마지막 값이 다음으로 이동해야 하는 지점이다.
+
 import heapq
 from typing import List
 from Backend.Map_Management_and_Path_Planning.Map import Map
 
 
 class PathPlanner:
-    def __init__(self, mapObject: Map):
-        self.__map = mapObject
-        self.__currentPath = []
+    def __init__(self):
+        self.__mapInstance = None
+        self.__currentPath = None
+
+    # 맵 객체를 반환
+    def get_mapInstance(self):
+        return self.__mapInstance
+
+    # 맵 객체를 설정
+    def set_mapInstance(self, mapInstance: Map):
+        self.__mapInstance = mapInstance
 
     # 현재 경로를 반환
     def get_current_path(self):
@@ -25,7 +39,7 @@ class PathPlanner:
         neighbors = []
         for direction in directions:
             neighbor = (node[0] + direction[0], node[1] + direction[1])
-            cols, rows = self.__map.get_map_length()
+            cols, rows = self.__mapInstance.get_map_length()
             if 0 <= neighbor[0] < cols and 0 <= neighbor[1] < rows:
                 neighbors.append(neighbor)
         return neighbors
@@ -61,16 +75,15 @@ class PathPlanner:
         # path.append(start)  # 시작점 추가
         path.reverse()  # 시작점부터 경로를 재구성
         return path
-
     # ----------------------------------- #
 
     # 최단 경로 구하기
     def plan_path(self):
         # self.__map.print_full_map()
 
-        start = self.__map.get_robot_coord()  # 로봇의 현재 위치
-        goals = [spot.get_position() for spot in self.__map.get_spots() if not spot.is_explored()]  # 방문하지 않은 탐색 지점
-        hazards = {hazard.get_position() for hazard in self.__map.get_hazards() if not hazard.is_hidden()}  # 공개된 위험 지점
+        start = self.__mapInstance.get_robot_coord()  # 로봇의 현재 위치
+        goals = [spot.get_position() for spot in self.__mapInstance.get_spots() if not spot.is_explored()]  # 방문하지 않은 탐색 지점
+        hazards = {hazard.get_position() for hazard in self.__mapInstance.get_hazards() if not hazard.is_hidden()}  # 공개된 위험 지점
         path = [start]
 
         print(goals)
