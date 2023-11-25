@@ -1,3 +1,7 @@
+# 이 클래스는 음성 인식과 관련된 모든 것을 다룬다.
+# - 음성 인식 창(GUI)을 표시하고 음성 인식을 수행한다.
+# - GUI는 tkinter 모듈을 사용한다.
+# - 음성 인식은 Speech Recognition 모듈의 구글 STT API를 사용한다.
 import tkinter as tk
 from tkinter import messagebox
 import speech_recognition as sr
@@ -11,56 +15,66 @@ from Backend.Map_Management_and_Path_Planning.Map import Map
 
 
 class VoiceInputHandler:
-    def __init__(self, parent, mapObject: Map, callback=None):
-        self.add_button = None
-        self.window = tk.Toplevel(parent)
-        self.window.title("Record Voice")
+    def __init__(self, parentWindow, mapInstance: Map, callback=None):
+        self.__add_button = None
+        self.__window = tk.Toplevel(parentWindow)
+        self.__window.title("Record Voice")
+        self.__mapObject = mapInstance
+        self.__callback = callback
 
-        self.color1 = "#79D6F7"
-        self.color2 = "#F7F079"
-        self.window.config(bg=self.color2)
+        self.__color2 = "#F7F079"
+        self.__window.config(bg=self.__color2)
 
-        self.points_listbox = None
-        self.latest_input_label = None
-        self.record_button = None
-        self.mapObject = mapObject
-        self.robot_position = mapObject.get_robot_coord()
-        self.cols, self.rows = mapObject.get_map_length()
-        self.callback = callback
+        self.__points_listbox = None
+        self.__latest_input_label = None
+        self.__record_button = None
 
-        self.latest_input = [-1, -1, -1]
-        self.recorded_points = []
+        self.__latest_input = [-1, -1, -1]
+        self.__recorded_points = []
+
+        self.__window.withdraw()
+
+    # 마이크 버튼을 누르면 실행
+    def run(self):
+        # Create a new Toplevel window each time the method is called.
+        self.__window = tk.Toplevel()
+        self.__window.title("Record Voice")
+        self.__window.config(bg=self.__color2)
 
         self.setup_ui()
         self.center_window()
+        self.__window.deiconify()
 
+    # GUI 화면 설정
     def setup_ui(self):
-        record_frame = tk.Frame(self.window, bg=self.color2)
+        record_frame = tk.Frame(self.__window, bg=self.__color2)
         record_frame.pack(padx=10, pady=5)
 
-        record_label = tk.Label(record_frame, text="Record the type, row, and column number in Korean", bg=self.color2)
+        record_label = tk.Label(record_frame, text="Record the type, row, and column number in Korean", bg=self.__color2)
         record_label.pack()
 
         record_button = tk.Button(record_frame, text="Record new point", command=self.record_audio)
         record_button.pack()
-        self.record_button = record_button
+        self.__record_button = record_button
 
-        # display the input with 'Add' button
-        latest_input_frame = tk.Frame(self.window, bg=self.color2)
+        # 녹음된 값을 모니터링 하기 위해 텍스트로 표시
+        latest_input_frame = tk.Frame(self.__window, bg=self.__color2)
         latest_input_frame.pack(padx=10, pady=5)
 
-        latest_input_label = tk.Label(latest_input_frame, text="Type at (Column, Row)", bg=self.color2)
+        latest_input_label = tk.Label(latest_input_frame, text="Type at (Column, Row)", bg=self.__color2)
         latest_input_label.pack(side=tk.LEFT)
-        self.latest_input_label = latest_input_label
+        self.__latest_input_label = latest_input_label
 
+        # Add 버튼을 누르면 녹음된 지점이 지도에 추가된다
         add_button = tk.Button(latest_input_frame, text="Add", command=self.add_latest_input)
         add_button.pack(side=tk.LEFT)
-        self.add_button = add_button
+        self.__add_button = add_button
 
-        # Listbox and Scrollbar for recorded points
-        listbox_frame = tk.Frame(self.window, bg=self.color2)
+        # 지도에 추가할 녹음된 지점들을 표시한다
+        listbox_frame = tk.Frame(self.__window, bg=self.__color2)
         listbox_frame.pack(padx=10, pady=10)
 
+        # 더블클릭하면 삭제할 수 있다
         points_listbox = tk.Listbox(listbox_frame, height=6, width=16, bg='lightgray')
         points_listbox.pack(side=tk.LEFT)
         points_listbox.bind('<Double-1>', self.delete_selected_point)
@@ -68,60 +82,58 @@ class VoiceInputHandler:
         scrollbar = tk.Scrollbar(listbox_frame, command=points_listbox.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         points_listbox.config(yscrollcommand=scrollbar.set)
-        self.points_listbox = points_listbox
+        self.__points_listbox = points_listbox
 
-        # Label for instruction below the listbox
-        delete_message = tk.Label(self.window, text="Double click each item to delete", bg=self.color2)
+        delete_message = tk.Label(self.__window, text="Double click each item to delete", bg=self.__color2)
         delete_message.pack(pady=(0, 10))
 
-        # Button to close the window
-        close_button = tk.Button(self.window, text="Back to Map", command=self.close_window, bg=self.color2)
+        # Back to Map 버튼을 누르면 지도 화면으로 돌아간다
+        close_button = tk.Button(self.__window, text="Back to Map", command=self.close_window, bg=self.__color2)
         close_button.pack(pady=5)
 
+    # 음성을 녹음하여 STT를 적용한다
     def record_audio(self):
-        fs = 44100  # Sample rate
-        seconds = 5  # Duration of recording
+        fs = 44100  # sample rate
+        seconds = 5  # 5초간 녹음 수행
 
-        # Change the button text to "Recording..."
-        record_button = self.record_button
+        # 버튼 텍스트를 Recording...으로 바꿔준다
+        record_button = self.__record_button
         record_button.config(text="Recording...", state='disabled')
+        self.__window.update()
 
-        # Force GUI update before starting the recording
-        self.window.update()
-
-        # Start recording
+        # 녹음 시작
         recording = sd.rec(int(seconds * fs), samplerate=fs, channels=1)
-        sd.wait()  # Wait until recording is finished
+        sd.wait()
 
-        # Save the recording as a WAV file
+        # 녹음 파일을 audios 폴더에 WAV 파일로 저장
         file_path = os.path.join('audios', 'input.wav')
         wavio.write(file_path, recording, fs, sampwidth=2)
 
-        # Use the speech_to_text method to process the recorded audio
-        processed_input = self.speech_to_text(file_path)
-        self.latest_input = processed_input
-
-        # Update the label and reset the button text
-        if self.latest_input == (-1, -1, -1):
-            self.latest_input_label.config(text="Error occurred! Try again")
-            self.add_button.config(state="disabled")
+        # STT 적용하여 저장하고 모니터링 텍스트 변경
+        self.__latest_input = self.speech_to_text(file_path)
+        if -1 in self.__latest_input:  # 기본값이 반환된 경우 에러
+            self.__latest_input_label.config(text="Error occurred! Try again")
+            self.__add_button.config(state="disabled")  # 에러가 발생한 경우는 추가되지 못하게 막는다
         else:
-            type_text = "ColorBlob" if self.latest_input[0] == 0 else "Hazard"
-            col, row = self.latest_input[1:]
-            self.latest_input_label.config(text=f"{type_text} at ({col}, {row})")
-            self.add_button.config(state="normal")
+            type_text = "ColorBlob" if self.__latest_input[0] == 0 else "Hazard"
+            print(self.__latest_input)
+            col, row = self.__latest_input[1:]
+            self.__latest_input_label.config(text=f"{type_text} at ({col}, {row})")
+            self.__add_button.config(state="normal")
 
-        record_button.config(text="Record new point", state='normal')
+        record_button.config(text="Record new point", state='normal')  # 녹음 버튼 텍스트 원래로 돌려놓기
 
     # AI를 통한 STT 구현
     def speech_to_text(self, audio_file_path):
         recognizer = sr.Recognizer()
         with sr.AudioFile(audio_file_path) as source:
             audio_data = recognizer.record(source)
+
+        ret = [-1, -1, -1]  # 기본값
         try:
-            str_value = recognizer.recognize_google(audio_data, language="ko-KR")
+            str_value = recognizer.recognize_google(audio_data, language="ko-KR")  # 구글 API로 한국어 인식
             print(str_value)
-            number_mapping = {
+            number_mapping = {  # 세 가지 형식으로 인식되므로 각 형식을 지정
                 '공': 0, '영': 0, '0': 0,
                 '하나': 1, '일': 1, '1': 1,
                 '둘': 2, '이': 2, '2': 2,
@@ -133,77 +145,139 @@ class VoiceInputHandler:
                 '여덟': 8, '팔': 8, '8': 8,
                 '아홉': 9, '구': 9, '9': 9
             }
-            # Split the string into words for easier matching
+
+            # 세 단어로 인식되지 않으면 오류다
             words = str_value.split()
-            result = [1 if '위' in words[0] else 0]  # Default to 0 unless '위험' (danger) is detected
+            ret[0] = 1 if '위' in words[0] else 0  # 기본적으로 중요지점이고 '위'가 포함된 경우 위험지점이다
 
-            # Map the spoken words to their corresponding number
-            for word in words[1:]:  # Assume the first word is type, so start from the second word
-                number = number_mapping.get(word, None)
-                if number is not None:
-                    result.append(number)
-                if len(result) == 3:
-                    break  # Stop if we already have three items
+            # 2, 3번째 단어를 숫자(행/열 번호)로 변환
+            colStr, rowStr = words[1:]
+            colNum, rowNum = number_mapping.get(colStr, None), number_mapping.get(rowStr, None)
+            if colNum and rowNum:
+                ret[1], ret[2] = colNum, rowNum
 
-            if len(result) != 3:
+            # 3 단어로 나눠지지 않은 경우 에러 발생
+            if -1 in ret:
+                ret = [-1, -1, -1]
                 raise ValueError("Could not parse all needed numbers from speech")
-            return tuple(result)
+
+            return ret
 
         except (KeyError, ValueError, sr.UnknownValueError, sr.RequestError) as e:
             print(f"An error occurred while processing the speech: {e}")
-            ret = (-1, -1, -1)  # Return a default tuple on error
             return ret
 
+    # add 버튼을 누르면 녹음된 지점이 추가된다
     def add_latest_input(self):
-        if not self.is_valid_input():
+        if not self.is_valid_input():  # 올바른 값만 추가
             return
-        self.recorded_points.append(self.latest_input)
-        self.points_listbox.delete(0, tk.END)
-        for index, point in enumerate(self.recorded_points, start=1):
+        self.__recorded_points.append(self.__latest_input)
+        self.__points_listbox.delete(0, tk.END)
+        for index, point in enumerate(self.__recorded_points, start=1):
             entry = f"#{index}: {'ColorBlob' if point[0] == 0 else 'Hazard'} at ({point[1]}, {point[2]})"
-            self.points_listbox.insert(tk.END, entry)
-        self.latest_input_label.config(text="Type at (Column, Row)")
-        self.latest_input = [-1, -1, -1]
+            self.__points_listbox.insert(tk.END, entry)
+        self.__latest_input_label.config(text="Type at (Column, Row)")
+        self.__latest_input = [-1, -1, -1]
 
-    # Check if the point is the robot's position, a duplicate, or out of bounds
+    # 녹음된 값이 올바른 값인지 확인
     def is_valid_input(self):
-        col, row = self.latest_input[1:]
-        for existingCol, existingRow in self.mapObject.get_existing_positions():
-            if col == existingCol and row == existingRow:
-                messagebox.showerror("Invalid Input", "❌ Point already occupied!")
-                return False
-        if not (0 <= col < self.cols and 0 <= row < self.rows):
+        col, row = self.__latest_input[1:]
+
+        # 중복된 지점인지 확인
+        if (col, row) in [existingPoint for existingPoint in self.__mapObject.get_existing_positions()]:
+            messagebox.showerror("Invalid Input", "❌ Point already occupied!")
+            return False
+
+        # 이미 녹음된 지점인지 확인
+        if [col, row] in [recordedPoint[1:] for recordedPoint in self.__recorded_points]:
+            messagebox.showerror("Invalid Input", "❌ Point already recorded!")
+            return False
+
+        # 맵 밖을 벗어나는 지점인지 확인
+        cols, rows = self.__mapObject.get_map_length()
+        if not (0 <= col < cols and 0 <= row < rows):
             messagebox.showerror("Invalid Input", "❌ Point is out of map bounds.")
             return False
 
         return True
 
+    # 아이템을 더블클릭하여 삭제
     def delete_selected_point(self, event):
         try:
-            selected_index = self.points_listbox.curselection()[0]
-            self.points_listbox.delete(selected_index)
-            del self.recorded_points[selected_index]
+            selected_index = self.__points_listbox.curselection()[0]
+            self.__points_listbox.delete(selected_index)
+            del self.__recorded_points[selected_index]
         except IndexError:
             pass
 
+    # Back to Map 버튼을 누르면 창을 닫고 맵 화면으로 돌아간다
     def close_window(self):
-        newPoints = []
-        for point in self.recorded_points:
+        newPoints = []  # 새로 녹음된 지점들을 추가
+        for point in self.__recorded_points:
             pointType, pointCol, pointRow = point
             if pointType == 0:
                 newPoints.append(ColorBlob(pointCol, pointRow, hidden=True))
             else:
                 newPoints.append(Hazard(pointCol, pointRow, hidden=True))
-        self.mapObject.add_new_points(newPoints)
-        if self.callback:
-            self.callback()
+        self.__mapObject.add_new_points(newPoints)
 
-        self.window.destroy()
+        self.__callback()
+        self.__window.withdraw()
 
+    # 창을 화면 중앙에 배치
     def center_window(self):
-        self.window.update_idletasks()
-        width = self.window.winfo_width()
-        height = self.window.winfo_height()
-        x = (self.window.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.window.winfo_screenheight() // 2) - (height // 2)
-        self.window.geometry('{}x{}+{}+{}'.format(width, height, x, y))
+        self.__window.update_idletasks()
+        width = self.__window.winfo_width()
+        height = self.__window.winfo_height()
+        x = (self.__window.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.__window.winfo_screenheight() // 2) - (height // 2)
+        self.__window.geometry('{}x{}+{}+{}'.format(width, height, x, y))
+
+    # getter methods
+    def get_add_button(self):
+        return self.__add_button
+
+    def get_window(self):
+        return self.__window
+
+    def get_map_object(self):
+        return self.__mapObject
+
+    def get_callback(self):
+        return self.__callback
+
+    def get_points_listbox(self):
+        return self.__points_listbox
+
+    def get_latest_input_label(self):
+        return self.__latest_input_label
+
+    def get_record_button(self):
+        return self.__record_button
+
+    def get_latest_input(self):
+        return self.__latest_input
+
+    def get_recorded_points(self):
+        return self.__recorded_points
+
+    # setter methods
+    def set_latest_input(self, value):
+        if not isinstance(value, list) or not all(isinstance(n, int) for n in value):
+            raise ValueError("Latest input must be a list of integers.")
+        self.__latest_input = value
+
+    def set_recorded_points(self, points):
+        if not all(isinstance(point, list) and len(point) == 3 for point in points):
+            raise ValueError("Recorded points must be a list of [type, col, row].")
+        self.__recorded_points = points
+
+    def add_recorded_point(self, point):
+        if not isinstance(point, list) or len(point) != 3:
+            raise ValueError("Point must be a list of [type, col, row].")
+        self.__recorded_points.append(point)
+
+    def delete_recorded_point(self, index):
+        if not (0 <= index < len(self.__recorded_points)):
+            raise IndexError("Index out of range for recorded points.")
+        del self.__recorded_points[index]

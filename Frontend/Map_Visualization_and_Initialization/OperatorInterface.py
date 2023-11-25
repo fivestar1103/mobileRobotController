@@ -1,6 +1,10 @@
+# 이 클래스는 맵 초기화와 관련된 모든 것을 다룬다.
+# - tkinter를 사용하여 GUI를 표시한다.
+# - 사용자의 입력을 받아 Map 객체의 값을 수정한다.
 import tkinter as tk
 from tkinter import messagebox
 
+from Backend.Controllers.RobotController import RobotController
 from Backend.Data_Structures.ColorBlob import ColorBlob
 from Backend.Data_Structures.Hazard import Hazard
 from Backend.Data_Structures.Spot import Spot
@@ -8,13 +12,16 @@ from Backend.Map_Management_and_Path_Planning.Map import Map
 
 
 class OperatorInterface:
-    def __init__(self, mapInstance: Map, master=None):
-        self.hazards_display = None
-        self.color_blobs_display = None
-        self.spots_display = None
+    def __init__(self, mapInstance: Map, robotController: RobotController):
+        self.on_close_callback = None
         self.mapInstance = mapInstance
-        self.master = master if master else tk.Tk()
+        self.robotController = robotController
+        self.master = tk.Tk()
         self.master.title("Map Initialization")
+
+        self.hazards_display = None
+        self.colorBlobs_display = None
+        self.spots_display = None
 
         self.cols, self.rows = 0, 0
         self.robotCol, self.robotRow = -1, -1
@@ -28,6 +35,7 @@ class OperatorInterface:
         self.color4 = "#3C6575"
 
         self.master.config(bg=self.color1)
+        self.master.withdraw()
         self.create_widgets()
 
     def create_widgets(self):
@@ -43,7 +51,7 @@ class OperatorInterface:
         second_row.pack(fill=tk.X)
 
         self.spots_display = self.create_input_section(second_row, "Set Spots", self.set_spots, display=True)
-        self.color_blobs_display = self.create_input_section(second_row, "Set Color Blobs", self.set_color_blobs, display=True)
+        self.colorBlobs_display = self.create_input_section(second_row, "Set Color Blobs", self.set_color_blobs, display=True)
         self.hazards_display = self.create_input_section(second_row, "Set Hazards", self.set_hazards, display=True)
 
         delete_message = tk.Label(self.master, text="Double click each item to delete", bg=self.color1)
@@ -117,7 +125,7 @@ class OperatorInterface:
         if self.is_valid_input(col, row):
             col, row = int(col), int(row)
             self.color_blobs.append((col, row))
-            self.update_display(self.color_blobs_display, self.color_blobs)
+            self.update_display(self.colorBlobs_display, self.color_blobs)
 
     def set_hazards(self, col, row, frame):
         if self.is_valid_input(col, row):
@@ -152,7 +160,7 @@ class OperatorInterface:
             display_area.delete(selected_index)
             if display_area == self.spots_display:
                 self.spots.pop(selected_index)
-            elif display_area == self.color_blobs_display:
+            elif display_area == self.colorBlobs_display:
                 self.color_blobs.pop(selected_index)
             elif display_area == self.hazards_display:
                 self.hazards.pop(selected_index)
@@ -164,7 +172,9 @@ class OperatorInterface:
             messagebox.showerror("Invalid initialization", "❌ Please initialize the map with correct values.")
             return
         self.mapInstance.set_map_length(self.cols, self.rows)
-        self.mapInstance.set_robot_coord((self.robotCol, self.robotRow, 0))
+        robot_coord = (self.robotCol, self.robotRow, 0)
+        self.mapInstance.set_robot_coord(robot_coord)
+        self.robotController.set_current_position(robot_coord)
         spotsFormatted, hazardsFormatted, colorBlobsFormatted = [], [], []
         for spot in self.spots:
             col, row = spot
@@ -180,19 +190,18 @@ class OperatorInterface:
         self.mapInstance.set_color_blobs(colorBlobsFormatted)
 
         self.master.destroy()
+        self.on_close_callback()
 
     def center_window(self):
-        # Calculate the correct center position
-        self.master.update_idletasks()  # Update "requested size" from geometry manager
+        self.master.update_idletasks()
         window_width = self.master.winfo_reqwidth()
         window_height = self.master.winfo_reqheight()
         position_right = int(self.master.winfo_screenwidth() / 2 - window_width / 2)
         position_down = int(self.master.winfo_screenheight() / 2 - window_height / 2)
-
-        # Set the position of the window to the center of the screen
         self.master.geometry("+{}+{}".format(position_right, position_down))
 
-    def run(self):
+    def run(self, on_close):
+        self.on_close_callback = on_close
         self.center_window()
+        self.master.deiconify()
         self.master.mainloop()
-

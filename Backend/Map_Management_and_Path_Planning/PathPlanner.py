@@ -10,8 +10,8 @@ from Backend.Map_Management_and_Path_Planning.Map import Map
 
 
 class PathPlanner:
-    def __init__(self):
-        self.__mapInstance = None
+    def __init__(self, mapInstance: Map):
+        self.__mapInstance = mapInstance
         self.__currentPath = None
 
     # 맵 객체를 반환
