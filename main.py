@@ -18,13 +18,13 @@ if __name__ == "__main__":
 
     operatorInterface = OperatorInterface(mapInstance, robotController)
     display = addOn.get_display()
-    voiceInputHandler = display.voiceInputHandler
+    voiceInputHandler = display.get_voiceInputHandler()
     print("\tBooting complete...")
 
     # 지도 정보 초기화
     print("Initialize map: ")
     # ------------- debug ---------------
-    debug = False
+    debug = 1
     if debug:
         cols, rows = 9, 8
         robotCoord = (5, 1, 0)  # (5, 1)에 위치하고 북쪽을 바라보도록 초기화
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         mapInstance.set_robot_coord(robotCoord)
         mapInstance.set_spots(spots)
         mapInstance.set_hazards(hazards)
-        mapInstance.set_color_blobs(colorBlobs)
+        mapInstance.set_colorBlobs(colorBlobs)
         robotController.set_current_position(robotCoord)
     # --------------------------------------------------------
     else:

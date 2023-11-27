@@ -64,7 +64,7 @@ class SIMController:
 
     # 이동 동작 지시
     def send_movement_command(self):
-        if self.__display.isStop:
+        if self.__display.get_isStop():
             return
         self.receive_sensor_data(checkColorBlob=True, checkSpot=True, checkHazard=True)
 

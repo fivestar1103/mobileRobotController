@@ -51,7 +51,7 @@ class Map:
         return self.__colorBlobs
 
     # 중요 지점을 설정
-    def set_color_blobs(self, colorBlobs: List[ColorBlob]):
+    def set_colorBlobs(self, colorBlobs: List[ColorBlob]):
         self.__colorBlobs = colorBlobs
 
     # 지도 상의 로봇을 한 칸 앞으로 이동

@@ -1,182 +1,113 @@
 import tkinter as tk
 from tkinter import messagebox
 from PIL import ImageTk, Image
+from Utilities.UI_utilities import center_window, COLOR1, COLOR2, COLOR3, COLOR4
 
 from Backend.Map_Management_and_Path_Planning.Map import Map
 from Frontend.Voice_Handling.VoiceInputHandler import VoiceInputHandler
 
 
 class Display:
-    def __init__(self, SIMControllerInstance, mapInstance: Map, master=None):
-        self.canvas_width, self.canvas_height = None, None
-        self.rows = None
-        self.cols = None
+    def __init__(self, SIMControllerInstance, mapInstance: Map):
+        self.__canvas_width, self.__canvas_height = None, None
+        self.__rows, self.__cols = None, None
 
-        self.mic_button = None
-        self.goOrStop_button = None
-        self.auto_move_button = None
-        self.images = {}
-        self.log_text = None
-        self.log_scroll = None
-        self.canvas = None
-        self.button_frame = None
-        self.log_frame = None
-        self.canvas_frame = None
+        self.__mic_button, self.__goOrStop_button, self.__auto_move_button = None, None, None
+        self.__images = {}
+        self.__log_text, self.__log_scroll = None, None
+        self.__canvas = None
+        self.__button_frame, self.__log_frame, self.__canvas_frame = None, None, None
 
-        self.color1 = "#79D6F7"
-        self.color2 = "#F7F079"
-        self.color3 = "#A0374A"
-        self.color4 = "#3C6575"
-
-        self.SIMControllerInstance = SIMControllerInstance
-        self.mapInstance = mapInstance
-        self.master = master if master else tk.Tk()
-        self.voiceInputHandler = VoiceInputHandler(self.master, self.mapInstance, self.update_display)
-        self.master.config(bg=self.color1)
+        self.master = tk.Tk()
+        self.master.config(bg=COLOR1)
         self.master.title("Mobile Robot Controller")
 
-        self.isStop = True
-        self.autoMove = False
-        self.log_counter = 0
-        self.axis_padding = 15
-        self.cell_size = 50
+        self.__SIMControllerInstance = SIMControllerInstance
+        self.__mapInstance = mapInstance
+        self.__voiceInputHandler = VoiceInputHandler(self.master, self.__mapInstance, self.update_display)
 
-        # Load images for display
-        self.load_images()
-        # Prepare the master window for display
-        self.master.withdraw()
+        self.__isStop = True
+        self.__autoMove = False
+        self.__log_counter = 0  # 이벤트 로그 작성을 위한 카운터
+        self.__axis_padding = 15  # 맵을 프레임에서 살짝 띠워서 배치하기 위한 패딩
+        self.__cell_size = 50  # 맵 상 한칸한칸의 사이즈
+
+        self.load_images()  # 이미지 불러오기
+        self.master.withdraw()  # 화면 가리기
 
     def run(self):
-        self.SIMControllerInstance.set_path()
+        # OperatorInterface로 초기화가 완료되면 세팅 실행
+        self.__SIMControllerInstance.set_path()  # 경로 설정
 
-        self.cols, self.rows = self.mapInstance.get_map_length()
-        self.canvas_width = self.cols * self.cell_size + 2 * self.axis_padding
-        self.canvas_height = self.rows * self.cell_size + 2 * self.axis_padding
+        self.__cols, self.__rows = self.__mapInstance.get_map_length()
+        self.__canvas_width = self.__cols * self.__cell_size + 2 * self.__axis_padding
+        self.__canvas_height = self.__rows * self.__cell_size + 2 * self.__axis_padding
 
-        # Create and configure frames
         self.setup_frames()
-        # Initialize the canvas and log text widget
-        self.setup_canvas_and_log()
-        # Create control buttons
         self.create_buttons()
 
-        self.center_window()
+        center_window(self.master)
         self.update_display()
-        self.master.deiconify()
-        self.master.after(500, self.SIMControllerInstance.send_movement_command)
+
+        self.master.deiconify()  # 화면 보이기
+        self.master.after(500, self.__SIMControllerInstance.send_movement_command)  # 0.5초마다 다음 동작 명령을 지시
         self.master.mainloop()
 
     def setup_frames(self):
-        # Create and configure frames
-        self.canvas_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=self.color2)
-        self.log_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=self.color2)
-        self.button_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=self.color2)
+        # 프레임 생성
+        self.__canvas_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=COLOR2)
+        self.__log_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=COLOR2)
+        self.__button_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=COLOR2)
 
-        # Place frames using the grid manager
-        self.canvas_frame.grid(row=1, column=0, sticky="nsew", padx=(10, 5), pady=(10, 5))
-        self.button_frame.grid(row=1, column=1, sticky="ew", padx=(5, 5), pady=(10, 5))
-        self.log_frame.grid(row=1, column=2, sticky="nsew", padx=(5, 10), pady=(10, 5))
+        # 프레임에 안에 그리드 생성
+        self.__canvas_frame.grid(row=1, column=0, sticky="nsew", padx=(10, 5), pady=(10, 5))
+        self.__button_frame.grid(row=1, column=1, sticky="ew", padx=(5, 5), pady=(10, 5))
+        self.__log_frame.grid(row=1, column=2, sticky="nsew", padx=(5, 10), pady=(10, 5))
 
-        # Create titles
-        log_title = tk.Label(self.log_frame, text="Event Log", font=("Arial", 30), bg=self.color2)
+        # 프레임에 제목 설정
+        log_title = tk.Label(self.__log_frame, text="Event Log", font=("Arial", 30), bg=COLOR2)
         log_title.pack(side=tk.TOP, pady=10)
-        canvas_title = tk.Label(self.canvas_frame, text="Map", font=("Arial", 30), bg=self.color2)
+        canvas_title = tk.Label(self.__canvas_frame, text="Map", font=("Arial", 30), bg=COLOR2)
         canvas_title.pack(side=tk.TOP, pady=10)
 
-    def setup_canvas_and_log(self):
-        # Initialize the canvas
-        self.canvas = tk.Canvas(self.canvas_frame, width=self.canvas_width, height=self.canvas_height,
-                                bg='lightgray', highlightbackground="black")
-        self.canvas.pack(side='top', fill='both', expand=True)
+        # 캔버스(맵 표시 프레임) 설정
+        self.__canvas = tk.Canvas(self.__canvas_frame, width=self.__canvas_width, height=self.__canvas_height,
+                                  bg='lightgray', highlightbackground="black")
+        self.__canvas.pack(side='top', fill='both', expand=True)
 
-        # Initialize the log text widget with a scrollbar
-        self.log_scroll = tk.Scrollbar(self.log_frame)
-        self.log_text = tk.Text(self.log_frame, yscrollcommand=self.log_scroll.set,
-                                state='disabled', bg='lightgray', width=38,
-                                highlightbackground="black")
-        self.log_scroll.config(command=self.log_text.yview)
-        self.log_scroll.pack(side='right', fill='y')
-        self.log_text.pack(side='left', fill='both', expand=False)
-
-    def load_images(self):
-        self.images["robot"] = {
-            0: ImageTk.PhotoImage(Image.open("assets/Robot_N.png").resize((self.cell_size, self.cell_size))),
-            1: ImageTk.PhotoImage(Image.open("assets/Robot_E.png").resize((self.cell_size, self.cell_size))),
-            2: ImageTk.PhotoImage(Image.open("assets/Robot_S.png").resize((self.cell_size, self.cell_size))),
-            3: ImageTk.PhotoImage(Image.open("assets/Robot_W.png").resize((self.cell_size, self.cell_size)))
-        }
-
-        self.images["colorBlob"] = {
-            "revealed": ImageTk.PhotoImage(
-                Image.open("assets/ColorBlob_revealed.png").resize((self.cell_size, self.cell_size))),
-            "hidden": ImageTk.PhotoImage(
-                Image.open("assets/ColorBlob_hidden.png").resize((self.cell_size, self.cell_size)))
-        }
-
-        self.images["hazard"] = {
-            "revealed": ImageTk.PhotoImage(
-                Image.open("assets/Hazard_revealed.png").resize((self.cell_size, self.cell_size))),
-            "hidden": ImageTk.PhotoImage(
-                Image.open("assets/Hazard_hidden.png").resize((self.cell_size, self.cell_size)))
-        }
-
-        self.images["spot"] = {
-            "visited": ImageTk.PhotoImage(
-                Image.open("assets/Spot_visited.png").resize((self.cell_size, self.cell_size))),
-            "unvisited": ImageTk.PhotoImage(
-                Image.open("assets/Spot_unvisited.png").resize((self.cell_size, self.cell_size)))
-        }
-
-        self.images["buttons"] = {
-            "go": ImageTk.PhotoImage(
-                Image.open("assets/go_button.png").resize((self.cell_size, self.cell_size))),
-            "stop": ImageTk.PhotoImage(
-                Image.open("assets/stop_button.png").resize((self.cell_size, self.cell_size))),
-            "mic_enabled": ImageTk.PhotoImage(
-                Image.open("assets/mic_button_enabled.png").resize((self.cell_size, self.cell_size))),
-            "mic_disabled": ImageTk.PhotoImage(
-                Image.open("assets/mic_button_disabled.png").resize((self.cell_size, self.cell_size)))
-        }
-
-    def log_message(self, message):
-        # Alternate colors for each log entry
-        color = self.color3 if self.log_counter % 2 == 0 else self.color4
-        self.log_counter += 1
-
-        # Enable the text widget, insert the message, then disable it
-        self.log_text.config(state='normal')
-        if self.log_counter > 1:
-            # Add space before the log entry if it is not the first entry
-            self.log_text.insert('1.0', '\n')
-        # Create a new frame for each log entry to control the background color
-        log_frame = tk.Frame(self.log_text, bg=color, highlightthickness=0)  # Remove any highlight border
-        log_label = tk.Label(log_frame, text=f"#{self.log_counter}: {message}", bg=color, fg="white", anchor='w',
-                             justify=tk.LEFT, width=29)
-        log_label.pack(side=tk.TOP, fill=tk.X)  # Pack with fill=X to fill frame horizontally
-        self.log_text.window_create('1.0', window=log_frame)  # Insert at the beginning
-        self.log_text.yview('1.0')  # Auto-scroll to the top of the log
-        self.log_text.config(state='disabled')
+        # 이벤트 로그 설정
+        self.__log_scroll = tk.Scrollbar(self.__log_frame)
+        self.__log_text = tk.Text(self.__log_frame, yscrollcommand=self.__log_scroll.set,
+                                  state='disabled', bg='lightgray', width=38,
+                                  highlightbackground="black")
+        self.__log_scroll.config(command=self.__log_text.yview)
+        self.__log_scroll.pack(side='right', fill='y')
+        self.__log_text.pack(side='left', fill='both', expand=False)
 
     def create_buttons(self):
-        self.button_frame.pack_propagate(False)
-        self.button_frame.config(width=120, height=160)
+        # 버튼 프레임 생성
+        self.__button_frame.pack_propagate(False)
+        self.__button_frame.config(width=120, height=160)
 
-        self.auto_move_button = tk.Button(self.button_frame, command=self.toggle_auto_move, text="Auto Move Off",
-                                          borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat',
-                                          width=8
-                                          )
-        self.auto_move_button.pack(side=tk.TOP, pady=2, fill=tk.NONE)
+        # 자동 이동 버튼 생성
+        self.__auto_move_button = tk.Button(self.__button_frame, command=self.toggle_auto_move, text="Auto Move Off",
+                                            borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat',
+                                            width=8
+                                            )
+        self.__auto_move_button.pack(side=tk.TOP, pady=2, fill=tk.NONE)
 
-        initial_image = self.images["buttons"]["go"] if self.isStop else self.images["buttons"]["stop"]
-        self.goOrStop_button = tk.Button(self.button_frame, image=initial_image, command=self.on_goOrStop,
-                                         borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat')
-        self.goOrStop_button.image = initial_image  # Keep a reference
-        self.goOrStop_button.pack(side=tk.TOP, fill=tk.NONE, pady=2)
+        # 재생/멈춤 버튼 생성
+        initial_image = self.__images["buttons"]["go"] if self.__isStop else self.__images["buttons"]["stop"]
+        self.__goOrStop_button = tk.Button(self.__button_frame, image=initial_image, command=self.on_goOrStop,
+                                           borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat')
+        self.__goOrStop_button.image = initial_image
+        self.__goOrStop_button.pack(side=tk.TOP, fill=tk.NONE, pady=2)
 
-        self.mic_button = tk.Button(
-            self.button_frame,
-            image=self.images["buttons"]["mic_enabled"],
-            command=self.on_mic_click,  # Make sure this line is correct
+        # 녹음 버튼 생성
+        self.__mic_button = tk.Button(
+            self.__button_frame,
+            image=self.__images["buttons"]["mic_enabled"],
+            command=self.__voiceInputHandler.run,
             state=tk.NORMAL,
             borderwidth=0,
             highlightthickness=0,
@@ -184,134 +115,330 @@ class Display:
             relief='flat'
         )
 
-        self.mic_button.image = self.images["buttons"]["mic_enabled"]
-        self.mic_button.pack(side=tk.TOP, fill=tk.NONE, pady=2)
+        self.__mic_button.image = self.__images["buttons"]["mic_enabled"]
+        self.__mic_button.pack(side=tk.TOP, fill=tk.NONE, pady=2)
+
+    def update_display(self):
+        # 화면의 모든 구성요소를 지우고 전부 다시 그린다
+        self.__canvas.delete("all")
+
+        self.draw_axes()  # 축 번호 표시
+
+        # 전체 칸을 하얀색으로 표시
+        for col in range(self.__cols):
+            for row in range(self.__rows):
+                self.draw_element((col, row), "white")
+
+        # 경로 표시
+        self.draw_path(self.__SIMControllerInstance.get_path())
+
+        # 위험/중요/탐색 지점 표시
+        for hazard in self.__mapInstance.get_hazards():
+            self.draw_image(hazard.get_position(),
+                            self.__images["hazard"]["revealed"] if not hazard.is_hidden() else self.__images["hazard"][
+                                "hidden"])
+
+        for colorBlob in self.__mapInstance.get_color_blobs():
+            self.draw_image(colorBlob.get_position(),
+                            self.__images["colorBlob"]["revealed"] if not colorBlob.is_hidden() else
+                            self.__images["colorBlob"]["hidden"])
+
+        for spot in self.__mapInstance.get_spots():
+            self.draw_image(spot.get_position(),
+                            self.__images["spot"]["visited"] if spot.is_explored() else self.__images["spot"][
+                                "unvisited"])
+
+        self.draw_robot()  # 로봇 표시
+
+        self.master.update_idletasks()  # tkinter 업데이트
+
+    def draw_axes(self):
+        # 맵 위아래에 열번호 표시
+        for i in range(self.__cols):
+            self.__canvas.create_text(i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding,
+                                      self.__axis_padding / 2,
+                                      text=str(i), font=("Arial", 12, "bold"))
+            self.__canvas.create_text(i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding,
+                                      self.__canvas_height - self.__axis_padding / 2,
+                                      text=str(i), font=("Arial", 12, "bold"))
+
+        # 맵 좌우에 행번호 표시
+        for i in range(self.__rows):
+            self.__canvas.create_text(self.__axis_padding / 2,
+                                      i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding,
+                                      text=str(self.__rows - 1 - i), font=("Arial", 12, "bold"))
+            self.__canvas.create_text(self.__canvas_width - self.__axis_padding / 2,
+                                      i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding,
+                                      text=str(self.__rows - 1 - i), font=("Arial", 12, "bold"))
+
+    def draw_element(self, position, color, alpha='#'):
+        # 전체 칸 그리기
+        col, row = position
+        x1 = col * self.__cell_size + self.__axis_padding
+        y1 = (self.__mapInstance.get_map_length()[1] - row - 1) * self.__cell_size + self.__axis_padding
+        x2 = x1 + self.__cell_size
+        y2 = y1 + self.__cell_size
+        if alpha != '#':
+            color = color + alpha
+        self.__canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="black")
+
+    def draw_path(self, path):
+        # 경로 그리기
+        if path:
+            # 경로를 맵 상의 좌표로 변환
+            pathWithSelfCoord = reversed(path + [self.__mapInstance.get_robot_coord()[:2]])
+            canvas_path = [(col * self.__cell_size + self.__cell_size // 2 + self.__axis_padding,
+                            (self.__rows - row - 1) * self.__cell_size + self.__cell_size // 2 + self.__axis_padding)
+                           for
+                           col, row in pathWithSelfCoord]
+
+            # 각 점 사이에 점선 그리기
+            for i in range(len(canvas_path) - 1):
+                self.__canvas.create_line(canvas_path[i], canvas_path[i + 1], fill=COLOR3, width=2, dash=(4, 2),
+                                          arrow=tk.LAST)
+
+    def draw_robot(self):
+        # 로봇 그리기
+        robotRow, robotCol, robotDirection = self.__mapInstance.get_robot_coord()
+        x1 = robotRow * self.__cell_size + self.__axis_padding
+        y1 = (self.__mapInstance.get_map_length()[1] - robotCol - 1) * self.__cell_size + self.__axis_padding
+        self.__canvas.create_image(x1, y1, anchor="nw", image=self.__images["robot"][robotDirection])
+
+    def draw_image(self, position, image):
+        # 위험/중요/탐색 지점 그리기
+        col, row = position
+        x = col * self.__cell_size + self.__axis_padding
+        y = (self.__rows - row - 1) * self.__cell_size + self.__axis_padding  # Adjust for y-axis inversion
+        self.__canvas.create_image(x, y, anchor="nw", image=image)
+
+    def load_images(self):
+        # 이미지 불러오기
+        self.__images["robot"] = {
+            0: ImageTk.PhotoImage(Image.open("assets/Robot_N.png").resize((self.__cell_size, self.__cell_size))),
+            1: ImageTk.PhotoImage(Image.open("assets/Robot_E.png").resize((self.__cell_size, self.__cell_size))),
+            2: ImageTk.PhotoImage(Image.open("assets/Robot_S.png").resize((self.__cell_size, self.__cell_size))),
+            3: ImageTk.PhotoImage(Image.open("assets/Robot_W.png").resize((self.__cell_size, self.__cell_size)))
+        }
+
+        self.__images["colorBlob"] = {
+            "revealed": ImageTk.PhotoImage(
+                Image.open("assets/ColorBlob_revealed.png").resize((self.__cell_size, self.__cell_size))),
+            "hidden": ImageTk.PhotoImage(
+                Image.open("assets/ColorBlob_hidden.png").resize((self.__cell_size, self.__cell_size)))
+        }
+
+        self.__images["hazard"] = {
+            "revealed": ImageTk.PhotoImage(
+                Image.open("assets/Hazard_revealed.png").resize((self.__cell_size, self.__cell_size))),
+            "hidden": ImageTk.PhotoImage(
+                Image.open("assets/Hazard_hidden.png").resize((self.__cell_size, self.__cell_size)))
+        }
+
+        self.__images["spot"] = {
+            "visited": ImageTk.PhotoImage(
+                Image.open("assets/Spot_visited.png").resize((self.__cell_size, self.__cell_size))),
+            "unvisited": ImageTk.PhotoImage(
+                Image.open("assets/Spot_unvisited.png").resize((self.__cell_size, self.__cell_size)))
+        }
+
+        self.__images["buttons"] = {
+            "go": ImageTk.PhotoImage(
+                Image.open("assets/go_button.png").resize((self.__cell_size, self.__cell_size))),
+            "stop": ImageTk.PhotoImage(
+                Image.open("assets/stop_button.png").resize((self.__cell_size, self.__cell_size))),
+            "mic_enabled": ImageTk.PhotoImage(
+                Image.open("assets/mic_button_enabled.png").resize((self.__cell_size, self.__cell_size))),
+            "mic_disabled": ImageTk.PhotoImage(
+                Image.open("assets/mic_button_disabled.png").resize((self.__cell_size, self.__cell_size)))
+        }
+
+    def log_message(self, message):
+        # 색깔을 번갈아가며 로그 박스를 표시
+        color = COLOR3 if self.__log_counter % 2 == 0 else COLOR4
+        self.__log_counter += 1
+
+        # 텍스트 삽입
+        self.__log_text.config(state='normal')
+        if self.__log_counter > 1:
+            self.__log_text.insert('1.0', '\n')
+
+        # 로그박스 생성
+        log_frame = tk.Frame(self.__log_text, bg=color, highlightthickness=0)
+        log_label = tk.Label(log_frame, text=f"#{self.__log_counter}: {message}", bg=color, fg="white", anchor='w',
+                             justify=tk.LEFT, width=29)
+        log_label.pack(side=tk.TOP, fill=tk.X)
+
+        self.__log_text.window_create('1.0', window=log_frame)  # 제일 위에 배치
+        self.__log_text.yview('1.0')  # 제일 위로 오토 스크롤
+        self.__log_text.config(state='disabled')
 
     def toggle_auto_move(self):
-        self.autoMove = not self.autoMove
-        if self.autoMove:
+        # 자동 이동 버튼 로직
+        self.__autoMove = not self.__autoMove
+        if self.__autoMove:
             text = "Auto Move On"
             bg = "lightgreen"
         else:
             text = "Auto Move Off"
             bg = "lightgray"
-        self.auto_move_button.config(text=text, bg=bg)
-        self.isStop = True if self.autoMove else False
-        self.on_goOrStop()  # Trigger the robot movement when auto is turned on
+        self.__auto_move_button.config(text=text, bg=bg)
+        self.__isStop = True if self.__autoMove else False
+        self.on_goOrStop()
 
     def on_goOrStop(self):
-        # Change the state and button image
-        self.isStop = not self.isStop
-        new_image = self.images["buttons"]["go"] if self.isStop else self.images["buttons"]["stop"]
-        self.goOrStop_button.config(image=new_image)
-        self.goOrStop_button.image = new_image  # Update the reference to prevent garbage collection
+        # 재생/중지 버튼 로직
+        self.__isStop = not self.__isStop
+        new_image = self.__images["buttons"]["go"] if self.__isStop else self.__images["buttons"]["stop"]
+        self.__goOrStop_button.config(image=new_image)
+        self.__goOrStop_button.image = new_image  # Update the reference to prevent garbage collection
 
-        # Update microphone button state and image accordingly
-        mic_new_image = self.images["buttons"]["mic_enabled"] if self.isStop else self.images["buttons"]["mic_disabled"]
-        self.mic_button.config(image=mic_new_image, state=tk.NORMAL if self.isStop else tk.DISABLED)
-        self.mic_button.image = mic_new_image  # Update the reference
+        # 녹음 버튼 바꾸기
+        mic_new_image = self.__images["buttons"]["mic_enabled"] if self.__isStop else self.__images["buttons"]["mic_disabled"]
+        self.__mic_button.config(image=mic_new_image, state=tk.NORMAL if self.__isStop else tk.DISABLED)
+        self.__mic_button.image = mic_new_image  # Update the reference
 
-        # Send movement command
-        if self.autoMove:
-            self.SIMControllerInstance.send_movement_command()
+        # 자동이동시에는 계속해서, 아닐때는 버튼 누를때마다 이동 지시 내리기
+        if self.__autoMove:
+            self.__SIMControllerInstance.send_movement_command()
         else:
-            self.mic_button.config(image=self.images["buttons"]["mic_enabled"], state=tk.NORMAL)
-            self.SIMControllerInstance.send_movement_command()
-            self.isStop = True
-            self.goOrStop_button.config(image=self.images["buttons"]["go"])
-
-    def on_mic_click(self):
-        self.voiceInputHandler.run()
-
-    def draw_element(self, position, color, alpha='#'):
-        col, row = position
-        x1 = col * self.cell_size + self.axis_padding
-        y1 = (self.mapInstance.get_map_length()[1] - row - 1) * self.cell_size + self.axis_padding
-        x2 = x1 + self.cell_size
-        y2 = y1 + self.cell_size
-        if alpha != '#':
-            color = color + alpha
-        self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="black")
-
-    def update_display(self):
-        self.canvas.delete("all")
-        self.draw_axes()
-
-        # Draw all blank points as white blocks
-        for col in range(self.cols):
-            for row in range(self.rows):
-                self.draw_element((col, row), "white")
-
-        # Draw the planned path if it exists
-        self.draw_path(self.SIMControllerInstance.get_path())
-
-        # Draw images for hazards, color blobs, and spots
-        for hazard in self.mapInstance.get_hazards():
-            self.draw_image(hazard.get_position(), self.images["hazard"]["revealed"] if not hazard.is_hidden() else self.images["hazard"]["hidden"])
-
-        for colorBlob in self.mapInstance.get_color_blobs():
-            self.draw_image(colorBlob.get_position(), self.images["colorBlob"]["revealed"] if not colorBlob.is_hidden() else self.images["colorBlob"]["hidden"])
-
-        for spot in self.mapInstance.get_spots():
-            self.draw_image(spot.get_position(), self.images["spot"]["visited"] if spot.is_explored() else self.images["spot"]["unvisited"])
-
-        # Draw the robot
-        self.draw_robot()
-
-        self.master.update_idletasks()
-
-    def draw_robot(self):
-        robotRow, robotCol, robotDirection = self.mapInstance.get_robot_coord()
-        x1 = robotRow * self.cell_size + self.axis_padding
-        y1 = (self.mapInstance.get_map_length()[1] - robotCol - 1) * self.cell_size + self.axis_padding
-        self.canvas.create_image(x1, y1, anchor="nw", image=self.images["robot"][robotDirection])
+            self.__mic_button.config(image=self.__images["buttons"]["mic_enabled"], state=tk.NORMAL)
+            self.__SIMControllerInstance.send_movement_command()
+            self.__isStop = True
+            self.__goOrStop_button.config(image=self.__images["buttons"]["go"])
 
     def alert(self, message):
-        messagebox.showinfo(message=message)
+        messagebox.showinfo(message=message)  # 경고 팝업
 
-    def draw_axes(self):
-        # Draw column numbers on top and bottom (horizontal axis)
-        for i in range(self.cols):
-            self.canvas.create_text(i * self.cell_size + self.cell_size / 2 + self.axis_padding,
-                                    self.axis_padding / 2,
-                                    text=str(i), font=("Arial", 12, "bold"))
-            self.canvas.create_text(i * self.cell_size + self.cell_size / 2 + self.axis_padding,
-                                    self.canvas_height - self.axis_padding / 2,
-                                    text=str(i), font=("Arial", 12, "bold"))
+    # Getters
+    def get_canvas_width(self):
+        return self.__canvas_width
 
-        # Draw row numbers on left and right (vertical axis)
-        for i in range(self.rows):
-            self.canvas.create_text(self.axis_padding/2,
-                                    i * self.cell_size + self.cell_size / 2 + self.axis_padding,
-                                    text=str(self.rows - 1 - i), font=("Arial", 12, "bold"))
-            self.canvas.create_text(self.canvas_width - self.axis_padding / 2,
-                                    i * self.cell_size + self.cell_size / 2 + self.axis_padding,
-                                    text=str(self.rows - 1 - i), font=("Arial", 12, "bold"))
+    def get_canvas_height(self):
+        return self.__canvas_height
 
-    def draw_path(self, path):
-        if path:
-            # Convert path points to canvas coordinates
-            pathWithSelfCoord = reversed(path + [self.mapInstance.get_robot_coord()[:2]])
-            canvas_path = [(col * self.cell_size + self.cell_size // 2 + self.axis_padding,
-                            (self.rows - row - 1) * self.cell_size + self.cell_size // 2 + self.axis_padding) for
-                           col, row in pathWithSelfCoord]
+    def get_rows(self):
+        return self.__rows
 
-            # Draw lines between each point in the path
-            for i in range(len(canvas_path) - 1):
-                self.canvas.create_line(canvas_path[i], canvas_path[i + 1], fill=self.color3, width=2, dash=(4, 2), arrow=tk.LAST)
+    def get_cols(self):
+        return self.__cols
 
-            # Update the canvas to reflect the new drawing
+    def get_mic_button(self):
+        return self.__mic_button
 
-    def draw_image(self, position, image):
-        col, row = position
-        x = col * self.cell_size + self.axis_padding
-        y = (self.rows - row - 1) * self.cell_size + self.axis_padding  # Adjust for y-axis inversion
-        self.canvas.create_image(x, y, anchor="nw", image=image)
+    def get_goOrStop_button(self):
+        return self.__goOrStop_button
 
-    def center_window(self):
-        self.master.update_idletasks()
-        window_width = self.master.winfo_reqwidth()
-        window_height = self.master.winfo_reqheight()
-        position_right = int(self.master.winfo_screenwidth() / 2 - window_width / 2)
-        position_down = int(self.master.winfo_screenheight() / 2 - window_height / 2)
-        self.master.geometry("+{}+{}".format(position_right, position_down))
+    def get_auto_move_button(self):
+        return self.__auto_move_button
+
+    def get_images(self):
+        return self.__images
+
+    def get_log_text(self):
+        return self.__log_text
+
+    def get_log_scroll(self):
+        return self.__log_scroll
+
+    def get_canvas(self):
+        return self.__canvas
+
+    def get_button_frame(self):
+        return self.__button_frame
+
+    def get_log_frame(self):
+        return self.__log_frame
+
+    def get_canvas_frame(self):
+        return self.__canvas_frame
+
+    def get_SIMControllerInstance(self):
+        return self.__SIMControllerInstance
+
+    def get_mapInstance(self):
+        return self.__mapInstance
+
+    def get_voiceInputHandler(self):
+        return self.__voiceInputHandler
+
+    def get_isStop(self):
+        return self.__isStop
+
+    def get_autoMove(self):
+        return self.__autoMove
+
+    def get_log_counter(self):
+        return self.__log_counter
+
+    def get_axis_padding(self):
+        return self.__axis_padding
+
+    def get_cell_size(self):
+        return self.__cell_size
+
+    # Setters
+    def set_canvas_width(self, width):
+        self.__canvas_width = width
+
+    def set_canvas_height(self, height):
+        self.__canvas_height = height
+
+    def set_rows(self, rows):
+        self.__rows = rows
+
+    def set_cols(self, cols):
+        self.__cols = cols
+
+    def set_mic_button(self, mic_button):
+        self.__mic_button = mic_button
+
+    def set_goOrStop_button(self, goOrStop_button):
+        self.__goOrStop_button = goOrStop_button
+
+    def set_auto_move_button(self, auto_move_button):
+        self.__auto_move_button = auto_move_button
+
+    def set_images(self, images):
+        self.__images = images
+
+    def set_log_text(self, log_text):
+        self.__log_text = log_text
+
+    def set_log_scroll(self, log_scroll):
+        self.__log_scroll = log_scroll
+
+    def set_canvas(self, canvas):
+        self.__canvas = canvas
+
+    def set_button_frame(self, button_frame):
+        self.__button_frame = button_frame
+
+    def set_log_frame(self, log_frame):
+        self.__log_frame = log_frame
+
+    def set_canvas_frame(self, canvas_frame):
+        self.__canvas_frame = canvas_frame
+
+    def set_SIMControllerInstance(self, SIMControllerInstance):
+        self.__SIMControllerInstance = SIMControllerInstance
+
+    def set_mapInstance(self, mapInstance):
+        self.__mapInstance = mapInstance
+
+    def set_voiceInputHandler(self, voiceInputHandler):
+        self.__voiceInputHandler = voiceInputHandler
+
+    def set_isStop(self, isStop):
+        self.__isStop = isStop
+
+    def set_autoMove(self, autoMove):
+        self.__autoMove = autoMove
+
+    def set_log_counter(self, log_counter):
+        self.__log_counter = log_counter
+
+    def set_axis_padding(self, axis_padding):
+        self.__axis_padding = axis_padding
+
+    def set_cell_size(self, cell_size):
+        self.__cell_size = cell_size

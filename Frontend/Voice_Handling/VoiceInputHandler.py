@@ -8,6 +8,7 @@ import speech_recognition as sr
 import sounddevice as sd
 import wavio
 import os
+from Utilities.UI_utilities import center_window, COLOR1, COLOR2, COLOR3, COLOR4
 
 from Backend.Data_Structures.ColorBlob import ColorBlob
 from Backend.Data_Structures.Hazard import Hazard
@@ -16,22 +17,20 @@ from Backend.Map_Management_and_Path_Planning.Map import Map
 
 class VoiceInputHandler:
     def __init__(self, parentWindow, mapInstance: Map, callback=None):
-        self.__add_button = None
-        self.__window = tk.Toplevel(parentWindow)
-        self.__window.title("Record Voice")
         self.__mapObject = mapInstance
         self.__callback = callback
-
-        self.__color2 = "#F7F079"
-        self.__window.config(bg=self.__color2)
 
         self.__points_listbox = None
         self.__latest_input_label = None
         self.__record_button = None
+        self.__add_button = None
 
         self.__latest_input = [-1, -1, -1]
         self.__recorded_points = []
 
+        self.__window = tk.Toplevel(parentWindow)
+        self.__window.title("Record Voice")
+        self.__window.config(bg=COLOR2)
         self.__window.withdraw()
 
     # 마이크 버튼을 누르면 실행
@@ -39,18 +38,18 @@ class VoiceInputHandler:
         # Create a new Toplevel window each time the method is called.
         self.__window = tk.Toplevel()
         self.__window.title("Record Voice")
-        self.__window.config(bg=self.__color2)
+        self.__window.config(bg=COLOR2)
 
         self.setup_ui()
-        self.center_window()
+        center_window(self.__window)
         self.__window.deiconify()
 
     # GUI 화면 설정
     def setup_ui(self):
-        record_frame = tk.Frame(self.__window, bg=self.__color2)
+        record_frame = tk.Frame(self.__window, bg=COLOR2)
         record_frame.pack(padx=10, pady=5)
 
-        record_label = tk.Label(record_frame, text="Record the type, row, and column number in Korean", bg=self.__color2)
+        record_label = tk.Label(record_frame, text="Record the type, row, and column number in Korean", bg=COLOR2)
         record_label.pack()
 
         record_button = tk.Button(record_frame, text="Record new point", command=self.record_audio)
@@ -58,10 +57,10 @@ class VoiceInputHandler:
         self.__record_button = record_button
 
         # 녹음된 값을 모니터링 하기 위해 텍스트로 표시
-        latest_input_frame = tk.Frame(self.__window, bg=self.__color2)
+        latest_input_frame = tk.Frame(self.__window, bg=COLOR2)
         latest_input_frame.pack(padx=10, pady=5)
 
-        latest_input_label = tk.Label(latest_input_frame, text="Type at (Column, Row)", bg=self.__color2)
+        latest_input_label = tk.Label(latest_input_frame, text="Type at (Column, Row)", bg=COLOR2)
         latest_input_label.pack(side=tk.LEFT)
         self.__latest_input_label = latest_input_label
 
@@ -71,7 +70,7 @@ class VoiceInputHandler:
         self.__add_button = add_button
 
         # 지도에 추가할 녹음된 지점들을 표시한다
-        listbox_frame = tk.Frame(self.__window, bg=self.__color2)
+        listbox_frame = tk.Frame(self.__window, bg=COLOR2)
         listbox_frame.pack(padx=10, pady=10)
 
         # 더블클릭하면 삭제할 수 있다
@@ -84,11 +83,11 @@ class VoiceInputHandler:
         points_listbox.config(yscrollcommand=scrollbar.set)
         self.__points_listbox = points_listbox
 
-        delete_message = tk.Label(self.__window, text="Double click each item to delete", bg=self.__color2)
+        delete_message = tk.Label(self.__window, text="Double click each item to delete", bg=COLOR2)
         delete_message.pack(pady=(0, 10))
 
         # Back to Map 버튼을 누르면 지도 화면으로 돌아간다
-        close_button = tk.Button(self.__window, text="Back to Map", command=self.close_window, bg=self.__color2)
+        close_button = tk.Button(self.__window, text="Back to Map", command=self.close_window, bg=COLOR2)
         close_button.pack(pady=5)
 
     # 음성을 녹음하여 STT를 적용한다
@@ -223,15 +222,6 @@ class VoiceInputHandler:
 
         self.__callback()
         self.__window.withdraw()
-
-    # 창을 화면 중앙에 배치
-    def center_window(self):
-        self.__window.update_idletasks()
-        width = self.__window.winfo_width()
-        height = self.__window.winfo_height()
-        x = (self.__window.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.__window.winfo_screenheight() // 2) - (height // 2)
-        self.__window.geometry('{}x{}+{}+{}'.format(width, height, x, y))
 
     # getter methods
     def get_add_button(self):
