@@ -122,7 +122,7 @@ class OperatorInterface:
             hazardsFormatted.append(Hazard(col, row, hidden=True))
         self.__mapInstance.set_spots(spotsFormatted)
         self.__mapInstance.set_hazards(hazardsFormatted)
-        self.__mapInstance.set_colorBlobs(colorBlobsFormatted)
+        self.__mapInstance.set_color_blobs(colorBlobsFormatted)
 
         self.__master.destroy()
         self.__on_close_callback()

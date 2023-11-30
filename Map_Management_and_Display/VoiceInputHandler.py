@@ -145,17 +145,14 @@ class VoiceInputHandler:
                 '아홉': 9, '구': 9, '9': 9
             }
 
-            # 세 단어로 인식되지 않으면 오류다
-            words = str_value.split()
-            ret[0] = 1 if '위' in words[0] else 0  # 기본적으로 중요지점이고 '위'가 포함된 경우 위험지점이다
-
-            # 2, 3번째 단어를 숫자(행/열 번호)로 변환
-            colStr, rowStr = words[1:]
-            colNum, rowNum = number_mapping.get(colStr, None), number_mapping.get(rowStr, None)
-            if colNum and rowNum:
-                ret[1], ret[2] = colNum, rowNum
-
             # 3 단어로 나눠지지 않은 경우 에러 발생
+            pointType, pointCol, pointRow = str_value.split()
+
+            pointType = 1 if '위' in pointType else 0  # 기본적으로 중요지점이고 '위'가 포함된 경우 위험지점이다
+            # 2, 3번째 단어를 숫자(행/열 번호)로 변환
+            pointCol, pointRow = number_mapping.get(pointCol, -1), number_mapping.get(pointRow, -1)
+
+            ret = [pointType, pointCol, pointRow]
             if -1 in ret:
                 ret = [-1, -1, -1]
                 raise ValueError("Could not parse all needed numbers from speech")
@@ -219,6 +216,7 @@ class VoiceInputHandler:
             else:
                 newPoints.append(Hazard(pointCol, pointRow, hidden=True))
         self.__mapObject.add_new_points(newPoints)
+        self.__recorded_points = []
 
         self.__callback()
         self.__window.withdraw()

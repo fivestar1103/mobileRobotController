@@ -92,8 +92,7 @@ class Display:
         # 자동 이동 버튼 생성
         self.__auto_move_button = tk.Button(self.__button_frame, command=self.toggle_auto_move, text="Auto Move Off",
                                             borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat',
-                                            width=8
-                                            )
+                                            width=8)
         self.__auto_move_button.pack(side=tk.TOP, pady=2, fill=tk.NONE)
 
         # 재생/멈춤 버튼 생성
@@ -122,12 +121,12 @@ class Display:
         # 화면의 모든 구성요소를 지우고 전부 다시 그린다
         self.__canvas.delete("all")
 
-        self.draw_axes()  # 축 번호 표시
-
         # 전체 칸을 하얀색으로 표시
         for col in range(self.__cols):
             for row in range(self.__rows):
                 self.draw_element((col, row), "white")
+
+        self.draw_axes()  # 축 번호 표시
 
         # 경로 표시
         self.draw_path(self.__SIMControllerInstance.get_path())
@@ -155,32 +154,36 @@ class Display:
     def draw_axes(self):
         # 맵 위아래에 열번호 표시
         for i in range(self.__cols):
-            self.__canvas.create_text(i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding,
-                                      self.__axis_padding / 2,
-                                      text=str(i), font=("Arial", 12, "bold"))
-            self.__canvas.create_text(i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding,
-                                      self.__canvas_height - self.__axis_padding / 2,
-                                      text=str(i), font=("Arial", 12, "bold"))
+            x1 = i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding
+            x2 = x1
+            y1 = self.__axis_padding + self.__cell_size / 2
+            y2 = y1 + self.__canvas_height - self.__cell_size - self.__axis_padding*2
+            self.__canvas.create_line([x1, y1], [x2, y2], fill="black", width=1)
+
+            self.__canvas.create_text(x1, self.__axis_padding / 2, text=str(i), font=("Arial", 12, "bold"))
+            self.__canvas.create_text(x1, self.__canvas_height - self.__axis_padding / 2, text=str(i), font=("Arial", 12, "bold"))
 
         # 맵 좌우에 행번호 표시
         for i in range(self.__rows):
-            self.__canvas.create_text(self.__axis_padding / 2,
-                                      i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding,
-                                      text=str(self.__rows - 1 - i), font=("Arial", 12, "bold"))
-            self.__canvas.create_text(self.__canvas_width - self.__axis_padding / 2,
-                                      i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding,
-                                      text=str(self.__rows - 1 - i), font=("Arial", 12, "bold"))
+            x1 = self.__axis_padding + self.__cell_size / 2
+            x2 = x1 + self.__canvas_width - self.__cell_size - self.__axis_padding*2
+            y1 = i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding
+            y2 = y1
+            self.__canvas.create_line([x1, y1], [x2, y2], fill="black", width=1)
+
+            self.__canvas.create_text(self.__axis_padding / 2, y1, text=str(self.__rows - 1 - i), font=("Arial", 12, "bold"))
+            self.__canvas.create_text(self.__canvas_width - self.__axis_padding / 2, y1, text=str(self.__rows - 1 - i), font=("Arial", 12, "bold"))
 
     def draw_element(self, position, color, alpha='#'):
         # 전체 칸 그리기
         col, row = position
         x1 = col * self.__cell_size + self.__axis_padding
-        y1 = (self.__mapInstance.get_map_length()[1] - row - 1) * self.__cell_size + self.__axis_padding
+        y1 = (self.__rows - row - 1) * self.__cell_size + self.__axis_padding
         x2 = x1 + self.__cell_size
         y2 = y1 + self.__cell_size
         if alpha != '#':
             color = color + alpha
-        self.__canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="black")
+        self.__canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="white")
 
     def draw_path(self, path):
         # 경로 그리기
@@ -194,7 +197,7 @@ class Display:
 
             # 각 점 사이에 점선 그리기
             for i in range(len(canvas_path) - 1):
-                self.__canvas.create_line(canvas_path[i], canvas_path[i + 1], fill=COLOR3, width=2, dash=(4, 2),
+                self.__canvas.create_line(canvas_path[i], canvas_path[i + 1], fill=COLOR3, width=3, dash=(4, 2),
                                           arrow=tk.LAST)
 
     def draw_robot(self):

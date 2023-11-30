@@ -8,7 +8,7 @@ from Map_Management_and_Display.OperatorInterface import OperatorInterface
 
 if __name__ == "__main__":
     # 객체 생성
-    print("Hello! Booting...")
+    # print("Hello! Booting...")
     mapInstance = Map()
     pathPlanner = PathPlanner(mapInstance)
 
@@ -18,10 +18,10 @@ if __name__ == "__main__":
     operatorInterface = OperatorInterface(mapInstance, robotController)
     display = addOn.get_display()
     voiceInputHandler = display.get_voiceInputHandler()
-    print("\tBooting complete...")
+    # print("\tBooting complete...")
 
     # 지도 정보 초기화
-    print("Initialize map: ")
+    # print("Initialize map: ")
     # ------------- debug ---------------
     debug = 0
     if debug:
@@ -35,7 +35,7 @@ if __name__ == "__main__":
             Spot(0, 5, False)
         ]
         colorBlobs = [
-            ColorBlob(3,1,False),
+            ColorBlob(3,1,True),
             ColorBlob(4,3,True),
             ColorBlob(4,5,True)
         ]
@@ -52,18 +52,18 @@ if __name__ == "__main__":
         mapInstance.set_robot_coord(robotCoord)
         mapInstance.set_spots(spots)
         mapInstance.set_hazards(hazards)
-        mapInstance.set_colorBlobs(colorBlobs)
+        mapInstance.set_color_blobs(colorBlobs)
         robotController.set_current_position(robotCoord)
         display.run()
     # --------------------------------------------------------
     else:
         operatorInterface.run(display.run)
 
-    # 초기 맵 상태 출력
-    print("\tMap initialized...")
-    mapInstance.print_full_map("Initial")
-
-    # 최종 맵 상태 출력
-    print("\n⭐ All Spots Have Been Explored!\n")
-    mapInstance.print_full_map("Final")
-    print("\n\tExiting... Good bye!")
+    # # 초기 맵 상태 출력
+    # print("\tMap initialized...")
+    # mapInstance.print_full_map("Initial")
+    #
+    # # 최종 맵 상태 출력
+    # print("\n⭐ All Spots Have Been Explored!\n")
+    # mapInstance.print_full_map("Final")
+    # print("\n\tExiting... Good bye!")

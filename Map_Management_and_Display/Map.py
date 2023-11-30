@@ -51,7 +51,7 @@ class Map:
         return self.__colorBlobs
 
     # 중요 지점을 설정
-    def set_colorBlobs(self, colorBlobs: List[ColorBlob]):
+    def set_color_blobs(self, colorBlobs: List[ColorBlob]):
         self.__colorBlobs = colorBlobs
 
     # 지도 상의 로봇을 한 칸 앞으로 이동
@@ -122,38 +122,38 @@ class Map:
         return existing_positions
 
     # 전체 맵 반환 - 디버깅 목적. 실제로는 필요 없음
-    def print_full_map(self, whichMap=''):
-        # 맵의 크기에 맞는 2차원 배열 생성
-        cols, rows = self.get_map_length()
-        fullMap = [['⚪󠀠󠀠' for _ in range(cols)] for _ in range(rows)]
-
-        # spots, hazards, colorBlobs를 맵에 표시
-        for spot in self.__spots:  # '✅'는 방문한 탐색지점을 의미, '🎯'는 방문하지 않은 탐색지점
-            col, row = spot.get_position()
-            fullMap[row][col] = '✅' if spot.is_explored() else '🎯'
-
-        for hazard in self.__hazards:  # 'h'는 숨겨진 위험 지점을 의미, '⚠'는 공개된 위험 지점
-            col, row = hazard.get_position()
-            fullMap[row][col] = 'hh' if hazard.is_hidden() else '⚠️'
-
-        for colorBlob in self.__colorBlobs:  # 'c'는 숨겨진 중요 지점을 의미, '🔵'는 공개된 중요 지점
-            col, row = colorBlob.get_position()
-            fullMap[row][col] = 'cc' if colorBlob.is_hidden() else '🔵'
-
-        # 로봇의 위치를 맵에 표시
-        col, row, direction = self.__robotCoord
-        fullMap[row][col] = '🤖'
-
-        numberIconString = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
-        print(f"\n########## 🗺️ {whichMap} Map: ##########")
-        cols, rows = self.get_map_length()
-        for row in reversed(fullMap):
-            print(f"{numberIconString[rows - 1]}", end=' ')
-            rows -= 1
-            for col in row:
-                print(col, end=' ')
-            print()
-        print("  ", end=' ')
-        for colNum in range(cols):
-            print(f"{numberIconString[colNum]}", end=' ')
-        print()
+    # def print_full_map(self, whichMap=''):
+    #     # 맵의 크기에 맞는 2차원 배열 생성
+    #     cols, rows = self.get_map_length()
+    #     fullMap = [['⚪󠀠󠀠' for _ in range(cols)] for _ in range(rows)]
+    #
+    #     # spots, hazards, colorBlobs를 맵에 표시
+    #     for spot in self.__spots:  # '✅'는 방문한 탐색지점을 의미, '🎯'는 방문하지 않은 탐색지점
+    #         col, row = spot.get_position()
+    #         fullMap[row][col] = '✅' if spot.is_explored() else '🎯'
+    #
+    #     for hazard in self.__hazards:  # 'h'는 숨겨진 위험 지점을 의미, '⚠'는 공개된 위험 지점
+    #         col, row = hazard.get_position()
+    #         fullMap[row][col] = 'hh' if hazard.is_hidden() else '⚠️'
+    #
+    #     for colorBlob in self.__colorBlobs:  # 'c'는 숨겨진 중요 지점을 의미, '🔵'는 공개된 중요 지점
+    #         col, row = colorBlob.get_position()
+    #         fullMap[row][col] = 'cc' if colorBlob.is_hidden() else '🔵'
+    #
+    #     # 로봇의 위치를 맵에 표시
+    #     col, row, direction = self.__robotCoord
+    #     fullMap[row][col] = '🤖'
+    #
+    #     numberIconString = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
+    #     print(f"\n########## 🗺️ {whichMap} Map: ##########")
+    #     cols, rows = self.get_map_length()
+    #     for row in reversed(fullMap):
+    #         print(f"{numberIconString[rows - 1]}", end=' ')
+    #         rows -= 1
+    #         for col in row:
+    #             print(col, end=' ')
+    #         print()
+    #     print("  ", end=' ')
+    #     for colNum in range(cols):
+    #         print(f"{numberIconString[colNum]}", end=' ')
+    #     print()
