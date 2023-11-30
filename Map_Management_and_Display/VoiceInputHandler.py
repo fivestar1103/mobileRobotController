@@ -8,11 +8,11 @@ import speech_recognition as sr
 import sounddevice as sd
 import wavio
 import os
-from Utilities.UI_utilities import center_window, COLOR1, COLOR2, COLOR3, COLOR4
+from Utilities.UI_utilities import center_window, COLOR2
 
-from Backend.Data_Structures.ColorBlob import ColorBlob
-from Backend.Data_Structures.Hazard import Hazard
-from Backend.Map_Management_and_Path_Planning.Map import Map
+from Data_Structures.ColorBlob import ColorBlob
+from Data_Structures.Hazard import Hazard
+from Map_Management_and_Display.Map import Map
 
 
 class VoiceInputHandler:

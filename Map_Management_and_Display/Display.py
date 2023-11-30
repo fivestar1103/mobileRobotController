@@ -3,8 +3,8 @@ from tkinter import messagebox
 from PIL import ImageTk, Image
 from Utilities.UI_utilities import center_window, COLOR1, COLOR2, COLOR3, COLOR4
 
-from Backend.Map_Management_and_Path_Planning.Map import Map
-from Frontend.Voice_Handling.VoiceInputHandler import VoiceInputHandler
+from Map_Management_and_Display.Map import Map
+from Map_Management_and_Display.VoiceInputHandler import VoiceInputHandler
 
 
 class Display:

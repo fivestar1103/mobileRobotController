@@ -3,13 +3,13 @@
 # - 사용자의 입력을 받아 Map 객체의 값을 수정한다.
 import tkinter as tk
 from tkinter import messagebox
-from Utilities.UI_utilities import center_window, COLOR1, COLOR2, COLOR3, COLOR4
+from Utilities.UI_utilities import center_window, COLOR1, COLOR2
 
-from Backend.Controllers.RobotController import RobotController
-from Backend.Data_Structures.ColorBlob import ColorBlob
-from Backend.Data_Structures.Hazard import Hazard
-from Backend.Data_Structures.Spot import Spot
-from Backend.Map_Management_and_Path_Planning.Map import Map
+from Controllers.RobotController import RobotController
+from Data_Structures.ColorBlob import ColorBlob
+from Data_Structures.Hazard import Hazard
+from Data_Structures.Spot import Spot
+from Map_Management_and_Display.Map import Map
 
 
 class OperatorInterface:
@@ -119,7 +119,7 @@ class OperatorInterface:
             colorBlobsFormatted.append(ColorBlob(col, row, hidden=True))
         for hazard in self.__hazards:
             col, row = hazard
-            hazardsFormatted.append(Hazard(col, row, hidden=False))
+            hazardsFormatted.append(Hazard(col, row, hidden=True))
         self.__mapInstance.set_spots(spotsFormatted)
         self.__mapInstance.set_hazards(hazardsFormatted)
         self.__mapInstance.set_colorBlobs(colorBlobsFormatted)

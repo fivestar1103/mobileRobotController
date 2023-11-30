@@ -1,4 +1,4 @@
-from Backend.Data_Structures.Position import Position
+from Data_Structures.Position import Position
 
 
 class Spot(Position):

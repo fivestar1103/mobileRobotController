@@ -2,7 +2,7 @@
 # 상하좌우 한칸씩을 탐색하여 중요 지점 여부를 판별한다.
 # 숨겨진 중요지점이 발견되면 그 지점을 공개된 중요지점으로 바꾼다.
 
-from Backend.Sensors.Sensor import Sensor
+from Controllers.Sensors.Sensor import Sensor
 
 
 class ColorBlobSensor(Sensor):

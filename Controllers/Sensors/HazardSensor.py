@@ -2,7 +2,7 @@
 # 바로 앞의 한칸을 탐색하여 위험 지점 여부를 판별한다.
 # 숨겨진 위험지점이 발견되면 그 지점을 공개된 위험지점으로 바꾼다.
 
-from Backend.Sensors.Sensor import Sensor
+from Controllers.Sensors.Sensor import Sensor
 
 
 class HazardSensor(Sensor):

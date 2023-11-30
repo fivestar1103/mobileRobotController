@@ -1,11 +1,10 @@
-from Backend.Data_Structures.ColorBlob import ColorBlob
-from Backend.Data_Structures.Hazard import Hazard
-from Backend.Data_Structures.Spot import Spot
-from Backend.Controllers.SIMController import SIMController
-from Backend.Map_Management_and_Path_Planning.Map import Map
-from Backend.Map_Management_and_Path_Planning.PathPlanner import PathPlanner
-from Frontend.Map_Visualization_and_Initialization.Display import Display
-from Frontend.Map_Visualization_and_Initialization.OperatorInterface import OperatorInterface
+from Data_Structures.ColorBlob import ColorBlob
+from Data_Structures.Hazard import Hazard
+from Data_Structures.Spot import Spot
+from Controllers.SIMController import SIMController
+from Map_Management_and_Display.Map import Map
+from Map_Management_and_Display.PathPlanner import PathPlanner
+from Map_Management_and_Display.OperatorInterface import OperatorInterface
 
 if __name__ == "__main__":
     # 객체 생성
@@ -24,7 +23,7 @@ if __name__ == "__main__":
     # 지도 정보 초기화
     print("Initialize map: ")
     # ------------- debug ---------------
-    debug = 1
+    debug = 0
     if debug:
         cols, rows = 9, 8
         robotCoord = (5, 1, 0)  # (5, 1)에 위치하고 북쪽을 바라보도록 초기화
@@ -41,7 +40,7 @@ if __name__ == "__main__":
             ColorBlob(4,5,True)
         ]
         hazards = [
-            Hazard(1, 1, False),
+            Hazard(1, 1, True),
             Hazard(3,3, True),
             Hazard(4, 2, True),
             Hazard(7, 7, True),
@@ -55,6 +54,7 @@ if __name__ == "__main__":
         mapInstance.set_hazards(hazards)
         mapInstance.set_colorBlobs(colorBlobs)
         robotController.set_current_position(robotCoord)
+        display.run()
     # --------------------------------------------------------
     else:
         operatorInterface.run(display.run)
@@ -62,9 +62,6 @@ if __name__ == "__main__":
     # 초기 맵 상태 출력
     print("\tMap initialized...")
     mapInstance.print_full_map("Initial")
-
-    # 맵 화면 GUI 실행
-    display.run()
 
     # 최종 맵 상태 출력
     print("\n⭐ All Spots Have Been Explored!\n")

@@ -1,9 +1,9 @@
 # 이 클래스는 지도 객체를 구현한 것으로, 지도와 관련된 모든 정보와 동작을 다룬다.
 
 from typing import List, Tuple
-from Backend.Data_Structures.ColorBlob import ColorBlob
-from Backend.Data_Structures.Hazard import Hazard
-from Backend.Data_Structures.Spot import Spot
+from Data_Structures.ColorBlob import ColorBlob
+from Data_Structures.Hazard import Hazard
+from Data_Structures.Spot import Spot
 
 
 class Map:

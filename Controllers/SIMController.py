@@ -3,10 +3,10 @@
 # - SIM으로부터 센서 값을 입력 받아서 지도에 표시하고 필요한 경우 새로운 경로를 계산한다
 # - 로봇이 지시를 불이행 했을 경우 새로운 경로를 계산한다
 
-from Backend.Map_Management_and_Path_Planning.Map import Map
-from Backend.Map_Management_and_Path_Planning.PathPlanner import PathPlanner
-from Backend.Controllers.RobotController import RobotController
-from Frontend.Map_Visualization_and_Initialization.Display import Display
+from Map_Management_and_Display.Map import Map
+from Map_Management_and_Display.PathPlanner import PathPlanner
+from Controllers.RobotController import RobotController
+from Map_Management_and_Display.Display import Display
 
 
 class SIMController:
