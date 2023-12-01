@@ -8,7 +8,7 @@ import speech_recognition as sr
 import sounddevice as sd
 import wavio
 import os
-from Utilities.UI_utilities import center_window
+from Utilities.UI_utilities import center_window, COLOR2
 
 from Data_Structures.ColorBlob import ColorBlob
 from Data_Structures.Hazard import Hazard
@@ -20,10 +20,6 @@ class VoiceInputHandler:
         self.__mapObject = mapInstance
         self.__callback = callback
 
-        self.color1 = "#ebe0ff"
-        self.color2 = "#660099"
-        self.color3 = "#dac7ff"
-
         self.__points_listbox = None
         self.__latest_input_label = None
         self.__record_button = None
@@ -34,7 +30,7 @@ class VoiceInputHandler:
 
         self.__window = tk.Toplevel(parentWindow)
         self.__window.title("Record Voice")
-        self.__window.config(bg=self.color1)
+        self.__window.config(bg=COLOR2)
         self.__window.withdraw()
 
     # 마이크 버튼을 누르면 실행
@@ -42,7 +38,7 @@ class VoiceInputHandler:
         # Create a new Toplevel window each time the method is called.
         self.__window = tk.Toplevel()
         self.__window.title("Record Voice")
-        self.__window.config(bg=self.color1)
+        self.__window.config(bg=COLOR2)
 
         self.setup_ui()
         center_window(self.__window)
@@ -50,35 +46,35 @@ class VoiceInputHandler:
 
     # GUI 화면 설정
     def setup_ui(self):
-        record_frame = tk.Frame(self.__window, bg=self.color1)
+        record_frame = tk.Frame(self.__window, bg=COLOR2)
         record_frame.pack(padx=10, pady=5)
 
-        record_label = tk.Label(record_frame, text="Record the type, row, and column number in Korean",font=("Serif", 12),  fg = self.color2, bg=self.color1)
+        record_label = tk.Label(record_frame, text="Record the type, row, and column number in Korean", bg=COLOR2)
         record_label.pack()
 
-        record_button = tk.Button(record_frame, text="Record new point", font=("Serif", 12, "bold"),  fg = self.color1, bg=self.color2, command=self.record_audio)
+        record_button = tk.Button(record_frame, text="Record new point", command=self.record_audio)
         record_button.pack()
         self.__record_button = record_button
 
         # 녹음된 값을 모니터링 하기 위해 텍스트로 표시
-        latest_input_frame = tk.Frame(self.__window, bg=self.color1)
+        latest_input_frame = tk.Frame(self.__window, bg=COLOR2)
         latest_input_frame.pack(padx=10, pady=5)
 
-        latest_input_label = tk.Label(latest_input_frame, text="Type at (Column, Row)", font=("Serif", 12),  fg = self.color2, bg=self.color1)
-        latest_input_label.pack()
+        latest_input_label = tk.Label(latest_input_frame, text="Type at (Column, Row)", bg=COLOR2)
+        latest_input_label.pack(side=tk.LEFT)
         self.__latest_input_label = latest_input_label
 
         # Add 버튼을 누르면 녹음된 지점이 지도에 추가된다
-        add_button = tk.Button(latest_input_frame, text="Add", font=("Serif", 12, "bold"),  fg = self.color1, bg=self.color2, command=self.add_latest_input)
-        add_button.pack()
+        add_button = tk.Button(latest_input_frame, text="Add", command=self.add_latest_input)
+        add_button.pack(side=tk.LEFT)
         self.__add_button = add_button
 
         # 지도에 추가할 녹음된 지점들을 표시한다
-        listbox_frame = tk.Frame(self.__window, bg=self.color1)
+        listbox_frame = tk.Frame(self.__window, bg=COLOR2)
         listbox_frame.pack(padx=10, pady=10)
 
         # 더블클릭하면 삭제할 수 있다
-        points_listbox = tk.Listbox(listbox_frame, height=6, width=16, bg=self.color3)
+        points_listbox = tk.Listbox(listbox_frame, height=6, width=16, bg='lightgray')
         points_listbox.pack(side=tk.LEFT)
         points_listbox.bind('<Double-1>', self.delete_selected_point)
 
@@ -87,11 +83,11 @@ class VoiceInputHandler:
         points_listbox.config(yscrollcommand=scrollbar.set)
         self.__points_listbox = points_listbox
 
-        delete_message = tk.Label(self.__window, text="Double click each item to delete", font=("Serif", 12), fg=self.color2, bg=self.color1)
+        delete_message = tk.Label(self.__window, text="Double click each item to delete", bg=COLOR2)
         delete_message.pack(pady=(0, 10))
 
         # Back to Map 버튼을 누르면 지도 화면으로 돌아간다
-        close_button = tk.Button(self.__window, text="Back to Map", font=("Serif", 12), bg=self.color2, fg=self.color1, command=self.close_window)
+        close_button = tk.Button(self.__window, text="Back to Map", command=self.close_window, bg=COLOR2)
         close_button.pack(pady=5)
 
     # 음성을 녹음하여 STT를 적용한다
