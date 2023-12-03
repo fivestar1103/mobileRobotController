@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from PIL import ImageTk, Image
-from Utilities.UI_utilities import center_window, COLOR1, COLOR2, COLOR3, COLOR4
+from Utilities.UI_utilities import center_window
 
 from Map_Management_and_Display.Map import Map
 from Map_Management_and_Display.VoiceInputHandler import VoiceInputHandler
@@ -18,8 +18,15 @@ class Display:
         self.__canvas = None
         self.__button_frame, self.__log_frame, self.__canvas_frame = None, None, None
 
+        self.color1 = "#ebe0ff"
+        self.color2 = "#7151a9"
+        self.color3 = "#660099"
+        self.color4 = "#46325d"
+        self.color5 = "#dac7ff"
+        self.color6 = "#3f3649"
+
         self.master = tk.Tk()
-        self.master.config(bg=COLOR1)
+        self.master.config(bg=self.color1)
         self.master.title("Mobile Robot Controller")
 
         self.__SIMControllerInstance = SIMControllerInstance
@@ -55,31 +62,31 @@ class Display:
 
     def setup_frames(self):
         # 프레임 생성
-        self.__canvas_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=COLOR2)
-        self.__log_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=COLOR2)
-        self.__button_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=COLOR2)
+        self.__canvas_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=self.color2)
+        self.__log_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=self.color2)
+        self.__button_frame = tk.Frame(self.master, relief="groove", padx=10, pady=10, bg=self.color2)
 
         # 프레임에 안에 그리드 생성
-        self.__canvas_frame.grid(row=1, column=0, sticky="nsew", padx=(10, 5), pady=(10, 5))
-        self.__button_frame.grid(row=1, column=1, sticky="ew", padx=(5, 5), pady=(10, 5))
-        self.__log_frame.grid(row=1, column=2, sticky="nsew", padx=(5, 10), pady=(10, 5))
+        self.__canvas_frame.grid(row=0, column=0, sticky="nsew", padx=(10, 5), pady=(10, 5))
+        self.__button_frame.grid(row=1, column=0, sticky="ew", padx=(5, 5), pady=(10, 5))
+        self.__log_frame.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=(5, 10), pady=(10, 5))
 
         # 프레임에 제목 설정
-        log_title = tk.Label(self.__log_frame, text="Event Log", font=("Arial", 30), bg=COLOR2)
+        log_title = tk.Label(self.__log_frame, text="Event Log", font=("Broadway", 25, "bold"), bg=self.color2, fg = self.color1)
         log_title.pack(side=tk.TOP, pady=10)
-        canvas_title = tk.Label(self.__canvas_frame, text="Map", font=("Arial", 30), bg=COLOR2)
+        canvas_title = tk.Label(self.__canvas_frame, text="Map", font=("Broadway", 30, "bold"), bg=self.color2,fg = self.color1)
         canvas_title.pack(side=tk.TOP, pady=10)
 
         # 캔버스(맵 표시 프레임) 설정
         self.__canvas = tk.Canvas(self.__canvas_frame, width=self.__canvas_width, height=self.__canvas_height,
-                                  bg='lightgray', highlightbackground="black")
+                                  bg=self.color1, highlightbackground=self.color6)
         self.__canvas.pack(side='top', fill='both', expand=True)
 
         # 이벤트 로그 설정
         self.__log_scroll = tk.Scrollbar(self.__log_frame)
         self.__log_text = tk.Text(self.__log_frame, yscrollcommand=self.__log_scroll.set,
-                                  state='disabled', bg='lightgray', width=38,
-                                  highlightbackground="black")
+                                  state='disabled', bg=self.color1, width=38,
+                                  highlightbackground=self.color6)
         self.__log_scroll.config(command=self.__log_text.yview)
         self.__log_scroll.pack(side='right', fill='y')
         self.__log_text.pack(side='left', fill='both', expand=False)
@@ -90,17 +97,18 @@ class Display:
         self.__button_frame.config(width=120, height=160)
 
         # 자동 이동 버튼 생성
-        self.__auto_move_button = tk.Button(self.__button_frame, command=self.toggle_auto_move, text="Auto Move Off",
-                                            borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat',
-                                            width=8)
-        self.__auto_move_button.pack(side=tk.TOP, pady=2, fill=tk.NONE)
+        self.__auto_move_button = tk.Button(self.__button_frame, command=self.toggle_auto_move, text="Auto Move Off", font=("Arial", 12, "bold"),
+                                          borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat', fg = self.color1, bg = self.color3,
+                                          width=15, height=3)
+        self.__auto_move_button.grid(row=0, column=0, padx=5, pady=2)
 
         # 재생/멈춤 버튼 생성
         initial_image = self.__images["buttons"]["go"] if self.__isStop else self.__images["buttons"]["stop"]
         self.__goOrStop_button = tk.Button(self.__button_frame, image=initial_image, command=self.on_goOrStop,
-                                           borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat')
+                                           borderwidth=0, highlightthickness=0, compound=tk.CENTER, relief='flat', 
+                                           bg = self.color3, width = 180, height = 65)
         self.__goOrStop_button.image = initial_image
-        self.__goOrStop_button.pack(side=tk.TOP, fill=tk.NONE, pady=2)
+        self.__goOrStop_button.grid(row=0, column=1, padx=5, pady=2)
 
         # 녹음 버튼 생성
         self.__mic_button = tk.Button(
@@ -111,11 +119,13 @@ class Display:
             borderwidth=0,
             highlightthickness=0,
             compound=tk.CENTER,
-            relief='flat'
+            relief='flat', 
+            bg = self.color3,
+            height = 65, width = 180
         )
 
         self.__mic_button.image = self.__images["buttons"]["mic_enabled"]
-        self.__mic_button.pack(side=tk.TOP, fill=tk.NONE, pady=2)
+        self.__mic_button.grid(row=0, column=2, padx=5, pady=2)
 
     def update_display(self):
         # 화면의 모든 구성요소를 지우고 전부 다시 그린다
@@ -158,10 +168,10 @@ class Display:
             x2 = x1
             y1 = self.__axis_padding + self.__cell_size / 2
             y2 = y1 + self.__canvas_height - self.__cell_size - self.__axis_padding*2
-            self.__canvas.create_line([x1, y1], [x2, y2], fill="black", width=1)
+            self.__canvas.create_line([x1, y1], [x2, y2], fill=self.color1, width=1)
 
-            self.__canvas.create_text(x1, self.__axis_padding / 2, text=str(i), font=("Arial", 12, "bold"))
-            self.__canvas.create_text(x1, self.__canvas_height - self.__axis_padding / 2, text=str(i), font=("Arial", 12, "bold"))
+            self.__canvas.create_text(x1, self.__axis_padding / 2, text=str(i), font=("Serif", 12, "bold"), fill = self.color4)
+            self.__canvas.create_text(x1, self.__canvas_height - self.__axis_padding / 2, text=str(i), font=("Serif", 12, "bold"), fill = self.color4)
 
         # 맵 좌우에 행번호 표시
         for i in range(self.__rows):
@@ -169,10 +179,10 @@ class Display:
             x2 = x1 + self.__canvas_width - self.__cell_size - self.__axis_padding*2
             y1 = i * self.__cell_size + self.__cell_size / 2 + self.__axis_padding
             y2 = y1
-            self.__canvas.create_line([x1, y1], [x2, y2], fill="black", width=1)
+            self.__canvas.create_line([x1, y1], [x2, y2], fill=self.color1, width=1)
 
-            self.__canvas.create_text(self.__axis_padding / 2, y1, text=str(self.__rows - 1 - i), font=("Arial", 12, "bold"))
-            self.__canvas.create_text(self.__canvas_width - self.__axis_padding / 2, y1, text=str(self.__rows - 1 - i), font=("Arial", 12, "bold"))
+            self.__canvas.create_text(self.__axis_padding / 2, y1, text=str(self.__rows - 1 - i), font=("Serif", 12, "bold"), fill = self.color4)
+            self.__canvas.create_text(self.__canvas_width - self.__axis_padding / 2, y1, text=str(self.__rows - 1 - i), font=("Serif", 12, "bold"), fill = self.color4)
 
     def draw_element(self, position, color, alpha='#'):
         # 전체 칸 그리기
@@ -197,7 +207,7 @@ class Display:
 
             # 각 점 사이에 점선 그리기
             for i in range(len(canvas_path) - 1):
-                self.__canvas.create_line(canvas_path[i], canvas_path[i + 1], fill=COLOR3, width=3, dash=(4, 2),
+                self.__canvas.create_line(canvas_path[i], canvas_path[i + 1], fill=self.color3, width=3, dash=(4, 2),
                                           arrow=tk.LAST)
 
     def draw_robot(self):
@@ -257,7 +267,7 @@ class Display:
 
     def log_message(self, message):
         # 색깔을 번갈아가며 로그 박스를 표시
-        color = COLOR3 if self.__log_counter % 2 == 0 else COLOR4
+        color = "#18005f" if self.__log_counter % 2 == 0 else "#660099"
         self.__log_counter += 1
 
         # 텍스트 삽입
@@ -267,8 +277,8 @@ class Display:
 
         # 로그박스 생성
         log_frame = tk.Frame(self.__log_text, bg=color, highlightthickness=0)
-        log_label = tk.Label(log_frame, text=f"#{self.__log_counter}: {message}", bg=color, fg="white", anchor='w',
-                             justify=tk.LEFT, width=29)
+        log_label = tk.Label(log_frame, text=f"#{self.__log_counter}: {message}", bg = self.color1, fg=color, font=("Serif", 12), anchor='w',
+                             justify=tk.LEFT, width=30)
         log_label.pack(side=tk.TOP, fill=tk.X)
 
         self.__log_text.window_create('1.0', window=log_frame)  # 제일 위에 배치
@@ -280,11 +290,13 @@ class Display:
         self.__autoMove = not self.__autoMove
         if self.__autoMove:
             text = "Auto Move On"
-            bg = "lightgreen"
+            bg = self.color1
+            fg = self.color3
         else:
             text = "Auto Move Off"
-            bg = "lightgray"
-        self.__auto_move_button.config(text=text, bg=bg)
+            bg = self.color6
+            fg = self.color1
+        self.__auto_move_button.config(text=text, bg=bg, fg=fg)
         self.__isStop = True if self.__autoMove else False
         self.on_goOrStop()
 
