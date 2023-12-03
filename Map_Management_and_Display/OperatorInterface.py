@@ -208,4 +208,4 @@ class OperatorInterface:
             elif display_area == self.__hazards_display:
                 self.__hazards.pop(selected_index)
         except IndexError:
-            pass  # 삭제할 아이템이 없는 경우
+            pass  # 삭제할 아이템이 없는 경우 
