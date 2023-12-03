@@ -1,8 +1,8 @@
 # 색깔 테마
-COLOR1 = "#79D6F7"
-COLOR2 = "#F7F079"
-COLOR3 = "#A0374A"
-COLOR4 = "#3C6575"
+COLOR1 = "#ebe0ff"
+COLOR2 = "#7151a9"
+COLOR3 = "#660099"
+COLOR4 = "#46325d"
 
 
 # 화면 중앙에 창을 배치하는 함수
