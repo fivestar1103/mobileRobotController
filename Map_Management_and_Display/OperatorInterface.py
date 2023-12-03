@@ -3,7 +3,7 @@
 # - 사용자의 입력을 받아 Map 객체의 값을 수정한다.
 import tkinter as tk
 from tkinter import messagebox
-from Utilities.UI_utilities import center_window, COLOR1, COLOR2
+from Utilities.UI_utilities import center_window
 
 from Controllers.RobotController import RobotController
 from Data_Structures.ColorBlob import ColorBlob
@@ -24,9 +24,16 @@ class OperatorInterface:
         self.__robotCol, self.__robotRow = -1, -1
         self.__spots, self.__hazards, self.__colorBlobs = [], [], []
 
+        self.color1 = "#ebe0ff"
+        self.color2 = "#916dd5"
+        self.color3 = "#46325d"
+        self.color4 = "#ebe0ff"
+        self.color5 = "#573d7f"
+        self.color6 = "#660099"
+
         self.__master = tk.Tk()
         self.__master.title("Map Initialization")
-        self.__master.config(bg=COLOR1)
+        self.__master.config(bg=self.color1)
         self.__master.withdraw()
 
         self.create_widgets()
@@ -35,64 +42,71 @@ class OperatorInterface:
         # 프로그램 시작시 실행
         self.__on_close_callback = on_close
         center_window(self.__master)
+        self.__master.geometry("900x500")
         self.__master.deiconify()
         self.__master.mainloop()
 
     def create_widgets(self):
         # 프레임 등 기본 뼈대 생성
         first_row = tk.Frame(self.__master)
-        first_row.config(bg=COLOR1)
+        first_row.config(bg=self.color1)
         first_row.pack(fill=tk.X)
 
         self.create_input_section(first_row, "Set Map Size", self.set_map_size)
         self.create_input_section(first_row, "Set Robot Start", self.set_robot_start)
 
         second_row = tk.Frame(self.__master)
-        second_row.config(bg=COLOR1)
+        second_row.config(bg=self.color1)
         second_row.pack(fill=tk.X)
 
         self.__spots_display = self.create_input_section(second_row, "Set Spots", self.set_spots, display=True)
         self.__colorBlobs_display = self.create_input_section(second_row, "Set Color Blobs", self.set_colorBlobs, display=True)
         self.__hazards_display = self.create_input_section(second_row, "Set Hazards", self.set_hazards, display=True)
 
-        delete_message = tk.Label(self.__master, text="Double click each item to delete", bg=COLOR1)
+        delete_message = tk.Label(self.__master, text="Double click each item to delete", font=("Serif", 12), bg=self.color1, fg=self.color6)
         delete_message.pack()
 
-        start_button = tk.Button(self.__master, text="Start", command=self.start_next_scene)
+        start_button = tk.Button(self.__master, text="Start", font=("Serif", 12, "bold"), command=self.start_next_scene, bg=self.color6, fg=self.color4)
         start_button.pack(pady=5)
 
     def create_input_section(self, parent, label_text, command, display=False):
         # 좌표 입력 칸 생성
         frame = tk.Frame(parent)
-        frame.config(bg=COLOR2)
-        frame.pack(side=tk.LEFT, expand=True, fill=tk.BOTH, padx=5, pady=5)
+        frame.config(bg=self.color2)
+        frame.pack(side=tk.LEFT, expand=True, fill=tk.BOTH, padx=10, pady=10)
 
-        title_label = tk.Label(frame, text=label_text, font=("Arial", 16, "bold"), bg=COLOR2)
+        title_label = tk.Label(frame, text=label_text, font=("Broadway", 20, "bold"), bg=self.color2, fg = self.color4)
         title_label.pack(pady=5)
 
         input_frame = tk.Frame(frame)
-        input_frame.config(bg=COLOR2)
+        input_frame.config(bg=self.color2)
         input_frame.pack(pady=2)
 
-        col_label = tk.Label(input_frame, text="Column:", bg=COLOR2)
-        col_label.pack(side=tk.LEFT, padx=2)
-        col_entry = tk.Entry(input_frame, width=2)
-        col_entry.pack(side=tk.LEFT, padx=2)
+        col_label = tk.Label(input_frame, text="Column:", font=("Serif", 14), bg=self.color5, fg = self.color4)
+        col_label.pack(side=tk.LEFT, padx=3)
+        col_entry = tk.Entry(input_frame, width=5, font=("Serif", 14, "bold"), bg = self.color1, fg = self.color3)  
+        col_entry.pack(side=tk.LEFT, padx=3)
 
-        row_label = tk.Label(input_frame, text="Row:", bg=COLOR2)
-        row_label.pack(side=tk.LEFT, padx=2)
-        row_entry = tk.Entry(input_frame, width=2)
-        row_entry.pack(side=tk.LEFT, padx=2)
+        row_label = tk.Label(input_frame, text="Row:", font=("Serif", 14), bg=self.color5, fg = self.color4)
+        row_label.pack(side=tk.LEFT, padx=3)
+        row_entry = tk.Entry(input_frame, width=5, font=("Serif", 14, "bold"), bg = self.color1, fg = self.color3)
+        row_entry.pack(side=tk.LEFT, padx=3)
 
-        button = tk.Button(frame, text="OK", command=lambda: command(col_entry.get(), row_entry.get(), frame), bg=COLOR2)
-        button.pack(pady=5)
+        button = tk.Canvas(frame, width=40, height=40, bg=self.color2, highlightthickness=0)
+        button.pack(pady=8)
+        circle = button.create_oval(5, 5, 35, 35, fill=self.color3, outline=self.color3)
+        text_id = button.create_text(20, 20, text="OK", fill=self.color4)
+
+        button.tag_bind(circle, "<Button-1>", lambda event: command(col_entry.get(), row_entry.get(), frame))
+        button.tag_bind(text_id, "<Button-1>", lambda event: command(col_entry.get(), row_entry.get(), frame))
+
 
         if display:
-            list_frame = tk.Frame(frame, bg=COLOR2)
+            list_frame = tk.Frame(frame, bg=self.color2)
 
             list_frame.pack()
 
-            display_area = tk.Listbox(list_frame, height=6, width=7)
+            display_area = tk.Listbox(list_frame, height=6, width=7, font=("Serif", 14), bg=self.color1, fg=self.color2)
             display_area.pack(side=tk.LEFT, fill=tk.BOTH, pady=5)
             scrollbar = tk.Scrollbar(list_frame, orient="vertical", command=display_area.yview)
             scrollbar.pack(side=tk.LEFT, fill=tk.Y, pady=5)
@@ -127,17 +141,19 @@ class OperatorInterface:
         self.__master.destroy()
         self.__on_close_callback()
 
-    def set_map_size(self, cols, rows, frame):
+        def set_map_size(self, cols, rows, frame):
         # 맵 크기 설정
-        try:
-            self.__cols, self.__rows = (int(cols) + 1, int(rows) + 1)
-            if self.__cols > 10 or self.__rows > 10 or self.__cols < 1 or self.__rows < 1:
+            try:
+                self.__cols, self.__rows = (int(cols), int(rows))
+                if self.__cols > 9 or self.__rows > 9 or self.__cols < 1 or self.__rows < 1:
+                    self.__cols, self.__rows = (int(cols) + 1, int(rows) + 1)
+                if self.__cols > 10 or self.__rows > 10 or self.__cols < 1 or self.__rows < 1:
+                    messagebox.showerror("Invalid Input", "❌ Please enter valid integers for columns and rows.")
+                    self.__cols, self.__rows = 0, 0
+                else:
+                    messagebox.showinfo("Success", "✅ Map size set successfully.")
+            except ValueError:
                 messagebox.showerror("Invalid Input", "❌ Please enter valid integers for columns and rows.")
-                self.__cols, self.__rows = 0, 0
-            else:
-                messagebox.showinfo("Success", "✅ Map size set successfully.")
-        except ValueError:
-            messagebox.showerror("Invalid Input", "❌ Please enter valid integers for columns and rows.")
 
     def set_robot_start(self, col, row, frame):
         # 로봇 위치 설정
