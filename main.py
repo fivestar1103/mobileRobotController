@@ -25,19 +25,22 @@ if __name__ == "__main__":
     # ------------- debug ---------------
     debug = 0
     if debug:
-        cols, rows = 9, 8
+        cols, rows = 10, 9
         robotCoord = (5, 1, 0)  # (5, 1)에 위치하고 북쪽을 바라보도록 초기화
         spots = [
             Spot(4,4, False),
             Spot(2,0, False),
             Spot(1,2, False),
             Spot(8,7, False),
-            Spot(0, 5, False)
+            Spot(0, 5, False),
+            Spot(9, 8, False),
         ]
         colorBlobs = [
             ColorBlob(3,1,True),
             ColorBlob(4,3,True),
-            ColorBlob(4,5,True)
+            ColorBlob(4,5,True),
+            ColorBlob(0, 0, True)
+
         ]
         hazards = [
             Hazard(1, 1, True),
@@ -46,6 +49,7 @@ if __name__ == "__main__":
             Hazard(7, 7, True),
             Hazard(7,6,True),
             Hazard(7, 5, True),
+            Hazard(0, 8, True)
         ]
 
         mapInstance.set_map_length(cols, rows)
