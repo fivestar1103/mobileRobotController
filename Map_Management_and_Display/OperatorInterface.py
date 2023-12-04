@@ -137,7 +137,9 @@ class OperatorInterface:
     def set_map_size(self, cols, rows, frame):
         # 맵 크기 설정
         try:
-            self.__cols, self.__rows = (int(cols) + 1, int(rows) + 1)
+            self.__cols, self.__rows = (int(cols), int(rows))
+            if self.__cols > 9 or self.__rows > 9 or self.__cols < 1 or self.__rows < 1:
+                self.__cols, self.__rows = (int(cols) + 1, int(rows) + 1)
             if self.__cols > 10 or self.__rows > 10 or self.__cols < 1 or self.__rows < 1:
                 messagebox.showerror("Invalid Input", "❌ Please enter valid integers for columns and rows.")
                 self.__cols, self.__rows = 0, 0
